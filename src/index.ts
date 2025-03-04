@@ -1,59 +1,11 @@
-import { ExecFrequency, IntervalTask } from "./types";
+import { Chronos } from "./chronos";
 
 export * from "./types"
+export { Chronos } from "./chronos"
 
-class TaskManager {
-  private intervalRunningTasks: Array<IntervalTask>
-  
-  constructor() {
-    this.intervalRunningTasks = [];
-  }
+const c = new Chronos();
+c.execEvery(5000, () => {
+  console.log("Executing chron c1");
+});
 
-  public makeTask(): IntervalTask {
-    return new IntervalTask();
-    
-  }
-
-  protected addIntervalTask(task: IntervalTask) {
-    this.intervalRunningTasks.push(task);
-  }
-
-  protected getTask(id: string) {
-    return this.intervalRunningTasks.find((t) => t.id === id);
-  }
-}
-
-export class Chronos extends TaskManager {
-  
-  constructor() {
-    super();
-  }
-
-  public execEvery(freq: number | ExecFrequency, handler: () => void, times?: number) {
-    let ofcHandler = handler;
-    const task = this.makeTask(); 
-    this.addIntervalTask(task);
-
-    if(freq < 0) {
-      console.error("frequency interval must be greater than 0");
-      return;
-    }
-
-    if(times) {
-      ofcHandler = async () => {
-        if(task.getExecTimes() <= times) {
-          await handler();
-          task.incrExecTimes();
-          return;
-        }
-      }
-    }
-
-    setInterval(ofcHandler, freq);
-  }
-}
-
-/* chronos.execEvery(5000, () => { */
-/*   console.log("Executing chron"); */
-/* }) */
-
+c.oneShot(new Date(2025, 3, 4, 11, 40, 0), () => console.log("eee"));
