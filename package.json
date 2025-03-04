@@ -1,5 +1,5 @@
 {
-  "name": "chronify",
+  "name": "@guilhermec-costa/chronify",
   "version": "0.0.1",
   "description": "Chron Job package",
   "main": "./dist/index.js",
@@ -7,7 +7,8 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsup"
+    "build": "tsup",
+    "dev": "tsx watch ./src/index.ts"
   },
   "keywords": [
     "Chronify"
@@ -17,5 +18,8 @@
   "devDependencies": {
     "tsup": "^8.4.0",
     "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "tsx": "^4.19.3"
   }
 }
