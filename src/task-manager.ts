@@ -6,9 +6,11 @@ export class TaskManager {
   }
 
   public makeTask(
-    name?: string
+    name: string,
+    repr: string,
+    executorId?: number
   ): Task {
-    return new Task(name);
+    return new Task(name, repr, executorId);
   }
 
   public addIntervalTask(task: Task) {
@@ -18,19 +20,20 @@ export class TaskManager {
 
 export class Task {
   private execTimes: number;
-  public readonly execId: number;
+  public executorId: number;
   public name: string;
   public scheduleRepr: number | string;
 
-  constructor(name?: string, repr: number | string) {
+  constructor(name: string, repr: string, executorId?: number) {
     this.execTimes = 0;
-    this.execId = 1;
-    if (!name) {
-      this.name = "unknown";
-    } else {
-      this.name = name;
-    }
+    if(executorId) this.executorId = executorId;
+    else this.executorId = 0;
+    this.name = name;
     this.scheduleRepr = repr;
+  }
+
+  public setExecutorId(id: number) {
+    this.executorId = id;
   }
 
   public incrExecTimes() {
@@ -43,5 +46,9 @@ export class Task {
 
   public prettyPrint() {
     console.log(`name: ${this.name}\nexecutedTimes: ${this.execTimes}`);
+  }
+
+  public stop() {
+    clearInterval(this.executorId);
   }
 }
