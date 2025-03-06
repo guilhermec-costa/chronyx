@@ -1,5 +1,7 @@
+import { CronType } from "./types";
+
 export class TaskManager {
-  public taskStorage: Array<Task>
+  public taskStorage: Array<Task>;
 
   constructor() {
     this.taskStorage = [];
@@ -8,9 +10,11 @@ export class TaskManager {
   public makeTask(
     name: string,
     repr: string,
+    handler: () => void,
+    type: CronType,
     executorId?: number
   ): Task {
-    return new Task(name, repr, executorId);
+    return new Task(name, repr, handler, type, executorId);
   }
 
   public addIntervalTask(task: Task) {
@@ -23,13 +27,25 @@ export class Task {
   public executorId: number;
   public name: string;
   public scheduleRepr: number | string;
+  public handler: () => void;
+  public cronType: CronType;
+  public status: string;
 
-  constructor(name: string, repr: string, executorId?: number) {
+  constructor(
+    name: string,
+    repr: string,
+    handler: () => void,
+    cronType: CronType,
+    executorId?: number
+  ) {
     this.execTimes = 0;
-    if(executorId) this.executorId = executorId;
+    if (executorId) this.executorId = executorId;
     else this.executorId = 0;
     this.name = name;
     this.scheduleRepr = repr;
+    this.handler = handler;
+    this.cronType = cronType;
+    this.status = "RUNNING";
   }
 
   public setExecutorId(id: number) {
@@ -45,10 +61,17 @@ export class Task {
   }
 
   public prettyPrint() {
-    console.log(`name: ${this.name}\nexecutedTimes: ${this.execTimes}`);
+    console.log(
+      `Name: ${this.name}\nType:${
+        this.cronType
+      }\nHandler:${this.handler.toString()}\nExecutorId:${
+        this.executorId
+      }\nExecutedTimes: ${this.execTimes}\nStatus:${this.status}`
+    );
   }
 
   public stop() {
     clearInterval(this.executorId);
+    this.status = "KILLED";
   }
 }

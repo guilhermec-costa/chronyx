@@ -1,5 +1,5 @@
 export enum ExecFrequency {
-  EVERY_5_MINUTES = 5 * 60 * 1000
+  EVERY_5_MINUTES = 5 * 60 * 1000,
 }
 
 export type CronParts = {
@@ -9,7 +9,7 @@ export type CronParts = {
   dayOfMonth: string;
   month: string;
   dayOfWeek: string;
-}
+};
 
 export const CRON_LIMITS = {
   second: [0, 59],
@@ -18,4 +18,6 @@ export const CRON_LIMITS = {
   dayOfMonth: [0, 31],
   month: [1, 12],
   dayOfWeek: [0, 7],
-}
+};
+
+export type CronType = "IntervalBased" | "ExpressionBased";
