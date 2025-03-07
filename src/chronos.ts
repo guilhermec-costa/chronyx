@@ -1,12 +1,28 @@
+import { CronMatcher } from "./cron-matcher";
 import { PatternValidator } from "./pattern-validator";
-import { Task, TaskManager } from "./task-manager";
+import { Scheduler } from "./schedulers/scheduler";
+import { WithExpression } from "./schedulers/with-expression";
+import { WithOneShot } from "./schedulers/with-one-shot";
+import { WithRecurrence } from "./schedulers/with-recurrence";
+import { Task } from "./task";
+import { TaskManager } from "./task-manager";
 import { CRON_LIMITS, CronParts, ExecFrequency } from "./types";
 
 export class Chronos {
-  private taskManager: TaskManager = new TaskManager();
-  private patternValidator: PatternValidator = new PatternValidator();
+  private readonly taskManager: TaskManager;
+  private readonly patternValidator: PatternValidator;
+
+  constructor() {
+    this.taskManager = TaskManager.singleton();
+    this.patternValidator = PatternValidator.singleton();
+  }
 
   public listTasks() {
+    if (this.taskManager.taskStorage.length === 0) {
+      console.log("Task Storage is empty");
+      return;
+    }
+
     for (const t of this.taskManager.taskStorage) {
       t.prettyPrint();
     }
@@ -15,34 +31,23 @@ export class Chronos {
   public schedule(
     expr: number | string,
     handler: () => void,
-    times?: number
+    name?: string
   ): Task {
     switch (typeof expr) {
       case "string": {
-        const parsedCron = this.patternValidator.parseExpr(expr);
-        const validCron = this.patternValidator.validateCron(parsedCron);
-        if (!validCron) {
-          throw new Error("Expression is not valid");
-        }
-
-        const i = setInterval(() => {
-          const now = new Date();
-          if (this.matchesCron(now, parsedCron)) {
-            handler();
-          }
-        }, 1000);
-        let task: Task = this.taskManager.makeTask(
-          "unknown",
-          expr,
+        return WithExpression.schedule({
           handler,
-          "ExpressionBased",
-          i
-        );
-        return task;
+          name: name || "unknown",
+          repr: expr.toString(),
+        });
       }
 
       case "number": {
-        return this.execEvery(Number(expr), handler, times);
+        return WithRecurrence.schedule({
+          handler,
+          name: name || "unknown",
+          repr: expr.toString(),
+        });
       }
     }
   }
@@ -50,56 +55,31 @@ export class Chronos {
   public execEvery(
     freq: number | ExecFrequency,
     handler: () => void,
-    times?: number
-  ) {
-    let task: Task = this.taskManager.makeTask(
-      "unknown",
-      freq.toString(),
+    name?: string
+  ): Task {
+    return WithRecurrence.schedule({
       handler,
-      "ExpressionBased"
-    );
-    if (freq < 0) {
-      throw new Error("frequency interval must be greater than 0");
-    }
-
-    if (times) {
-      const i = setInterval(() => {
-        handler();
-        if (task.getExecTimes() >= times) {
-          clearInterval(i);
-        }
-      });
-      task.setExecutorId(i);
-      this.taskManager.addIntervalTask(task);
-      return task;
-    }
-
-    const i = setInterval(handler, freq);
-    task.setExecutorId(i);
-    return task;
+      name: name || "unknown",
+      repr: freq.toString(),
+    });
   }
 
-  public oneShot(moment: Date, handler: () => void) {
-    const isMomentValid = moment.getTime() >= Date.now();
-    if (!isMomentValid) {
-      throw new Error("Target date should be greater/equal to current date");
-    }
-
-    const timer = setInterval(() => {
-      if (Date.now() >= moment.getTime()) {
-        handler();
-        clearInterval(timer);
-      }
-    }, 1000);
+  public oneShot(moment: Date, handler: () => void, name?: string): Task {
+    return WithOneShot.schedule({
+      handler,
+      name: name || "unknown",
+      repr: moment.toString(),
+    });
   }
 
-  public parseExpr(expr: string) {
-    return this.patternValidator.parseExpr(expr);
+  public validateCron(expr: string) {
+    const parts = this.patternValidator.parseExpr(expr);
+    return this.patternValidator.validateCron(parts);
   }
 
   public expandedValues(expr: string) {
     const { dayOfWeek, month, dayOfMonth, hour, minute, second } =
-      this.parseExpr(expr);
+      this.patternValidator.parseExpr(expr);
 
     return {
       //@ts-ignore
@@ -139,46 +119,6 @@ export class Chronos {
   }
 
   public matchesCron(moment: Date, cron: CronParts) {
-    const second = moment.getSeconds();
-    const minute = moment.getMinutes();
-    const hour = moment.getHours();
-    const dayOfMonth = moment.getDate();
-    const month = moment.getMonth() + 1;
-    const dayOfWeek = moment.getDay();
-
-    return (
-      (cron.second
-        ? this.patternValidator
-            .expandField(
-              cron.second,
-              CRON_LIMITS.second[0],
-              CRON_LIMITS.second[1]
-            )
-            .includes(second)
-        : true) &&
-      this.patternValidator
-        .expandField(cron.minute, CRON_LIMITS.minute[0], CRON_LIMITS.minute[1])
-        .includes(minute) &&
-      this.patternValidator
-        .expandField(cron.hour, CRON_LIMITS.minute[0], CRON_LIMITS.minute[1])
-        .includes(hour) &&
-      this.patternValidator
-        .expandField(
-          cron.dayOfMonth,
-          CRON_LIMITS.minute[0],
-          CRON_LIMITS.minute[1]
-        )
-        .includes(dayOfMonth) &&
-      this.patternValidator
-        .expandField(cron.month, CRON_LIMITS.minute[0], CRON_LIMITS.minute[1])
-        .includes(month) &&
-      this.patternValidator
-        .expandField(
-          cron.dayOfWeek,
-          CRON_LIMITS.minute[0],
-          CRON_LIMITS.minute[1]
-        )
-        .includes(dayOfWeek)
-    );
+    return Scheduler.matchesCron(moment, cron);
   }
 }

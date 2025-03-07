@@ -21,3 +21,9 @@ export const CRON_LIMITS = {
 };
 
 export type CronType = "IntervalBased" | "ExpressionBased";
+
+export type TaskArgs = {
+  name: string;
+  repr: string;
+  handler: () => void;
+};

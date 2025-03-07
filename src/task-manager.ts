@@ -1,10 +1,20 @@
-import { CronType } from "./types";
+import { Task } from "./task";
+import { CronParts, CronType } from "./types";
 
 export class TaskManager {
   public taskStorage: Array<Task>;
+  private static instance: TaskManager;
 
-  constructor() {
+  private constructor() {
     this.taskStorage = [];
+  }
+
+  public static singleton(): TaskManager {
+    if (!this.instance) {
+      this.instance = new TaskManager();
+    }
+
+    return TaskManager.instance;
   }
 
   public makeTask(
@@ -12,66 +22,15 @@ export class TaskManager {
     repr: string,
     handler: () => void,
     type: CronType,
+    parts: CronParts,
     executorId?: number
   ): Task {
-    return new Task(name, repr, handler, type, executorId);
+    const t = new Task(name, repr, handler, type, parts, executorId);
+    this.taskStorage.push(t);
+    return t;
   }
 
   public addIntervalTask(task: Task) {
     this.taskStorage.push(task);
-  }
-}
-
-export class Task {
-  private execTimes: number;
-  public executorId: number;
-  public name: string;
-  public scheduleRepr: number | string;
-  public handler: () => void;
-  public cronType: CronType;
-  public status: string;
-
-  constructor(
-    name: string,
-    repr: string,
-    handler: () => void,
-    cronType: CronType,
-    executorId?: number
-  ) {
-    this.execTimes = 0;
-    if (executorId) this.executorId = executorId;
-    else this.executorId = 0;
-    this.name = name;
-    this.scheduleRepr = repr;
-    this.handler = handler;
-    this.cronType = cronType;
-    this.status = "RUNNING";
-  }
-
-  public setExecutorId(id: number) {
-    this.executorId = id;
-  }
-
-  public incrExecTimes() {
-    this.execTimes++;
-  }
-
-  public getExecTimes() {
-    return this.execTimes;
-  }
-
-  public prettyPrint() {
-    console.log(
-      `Name: ${this.name}\nType:${
-        this.cronType
-      }\nHandler:${this.handler.toString()}\nExecutorId:${
-        this.executorId
-      }\nExecutedTimes: ${this.execTimes}\nStatus:${this.status}`
-    );
-  }
-
-  public stop() {
-    clearInterval(this.executorId);
-    this.status = "KILLED";
   }
 }

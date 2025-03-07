@@ -1,6 +1,18 @@
 import { CRON_LIMITS, CronParts } from "./types";
 
 export class PatternValidator {
+  private static instance: PatternValidator;
+
+  private constructor() {}
+
+  public static singleton(): PatternValidator {
+    if (!this.instance) {
+      this.instance = new PatternValidator();
+    }
+
+    return PatternValidator.instance;
+  }
+
   public parseExpr(expr: string): CronParts {
     const exprParts = expr.trim().split(/\s+/);
     const exprLen = exprParts.length;
