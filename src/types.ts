@@ -26,4 +26,5 @@ export type TaskArgs = {
   name: string;
   repr: string;
   handler: () => void;
+  debugTick: () => void;
 };

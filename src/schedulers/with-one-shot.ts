@@ -3,7 +3,7 @@ import { TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
 
 export class WithOneShot extends Scheduler {
-  public static schedule({ handler, name, repr }: TaskArgs) {
+  public static schedule({ handler, name, repr, debugTick }: TaskArgs) {
     const moment = new Date(repr);
     const isMomentValid = moment.getTime() >= Date.now();
     if (!isMomentValid) {

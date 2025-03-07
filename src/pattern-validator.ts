@@ -1,3 +1,4 @@
+import { ExpanderFabric } from "./field-expanders/expanderFabric";
 import { CRON_LIMITS, CronParts } from "./types";
 
 export class PatternValidator {
@@ -42,29 +43,9 @@ export class PatternValidator {
     lowerLimit: number,
     upperLimit: number
   ): number[] {
-    if (field === "*")
-      return Array.from(
-        { length: upperLimit - lowerLimit + 1 },
-        (_, i) => i + lowerLimit
-      );
-
-    if (field.includes("*/")) {
-      const step = +field.split("*/")[1];
-      return Array.from(
-        { length: Math.floor((upperLimit - lowerLimit + 1) / step) },
-        (_, i) => lowerLimit + i * step
-      );
-    }
-
-    if (field.includes("-")) {
-      return field.split("-").map(Number);
-    }
-
-    if (field.includes(",")) {
-      return field.split(",").map(Number);
-    }
-
-    return [Number(field)];
+    const expander = ExpanderFabric.getExpander(field, lowerLimit, upperLimit);
+    if (!expander) return [Number(field)];
+    return expander.expand(field, lowerLimit, upperLimit);
   }
 
   public validateField(field: string, min: number, max: number) {

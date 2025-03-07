@@ -80,15 +80,17 @@ export class Chronos {
 
   public schedule(
     expr: number | string,
-    handler: () => void,
-    name?: string
+    handler: VoidFunction,
+    name: string = "unknown",
+    debugTick: VoidFunction
   ): Task {
     switch (typeof expr) {
       case "string": {
         return WithExpression.schedule({
           handler,
-          name: name || "unknown",
+          name: name,
           repr: expr.toString(),
+          debugTick,
         });
       }
 
@@ -97,6 +99,7 @@ export class Chronos {
           handler,
           name: name || "unknown",
           repr: expr.toString(),
+          debugTick,
         });
       }
     }
@@ -104,21 +107,29 @@ export class Chronos {
 
   public execEvery(
     freq: number | ExecFrequency,
-    handler: () => void,
-    name?: string
+    handler: VoidFunction,
+    name: string = "unknown",
+    debugTick: VoidFunction
   ): Task {
     return WithRecurrence.schedule({
       handler,
-      name: name || "unknown",
+      name: name,
       repr: freq.toString(),
+      debugTick,
     });
   }
 
-  public oneShot(moment: Date, handler: () => void, name?: string): Task {
+  public oneShot(
+    moment: Date,
+    handler: VoidFunction,
+    name: string = "unknown",
+    debugTick: VoidFunction
+  ): Task {
     return WithOneShot.schedule({
       handler,
-      name: name || "unknown",
+      name: name,
       repr: moment.toString(),
+      debugTick,
     });
   }
 

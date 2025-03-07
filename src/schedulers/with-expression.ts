@@ -3,7 +3,7 @@ import { TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
 
 export class WithExpression extends Scheduler {
-  public static schedule({ handler, name, repr }: TaskArgs): Task {
+  public static schedule({ handler, name, repr, debugTick }: TaskArgs): Task {
     const parsedCron = this.cronValidationProxy(repr as string);
     const t = this.taskManager.makeTask(
       name,
