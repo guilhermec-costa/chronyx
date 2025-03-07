@@ -6,6 +6,7 @@ import { WithRecurrence } from "./schedulers/with-recurrence";
 import { Task } from "./task";
 import { TaskManager } from "./task-manager";
 import { CRON_LIMITS, CronParts, ExecFrequency } from "./types";
+import { addSeconds, subSeconds } from "date-fns";
 
 export class Chronos {
   private readonly taskManager: TaskManager;
@@ -25,6 +26,56 @@ export class Chronos {
     for (const t of this.taskManager.taskStorage) {
       t.prettyPrint();
     }
+  }
+
+  public previewNext(expr: string, n: number = 10) {
+    let previews: Date[] = [];
+    let nextPreview: Date = new Date();
+    Scheduler.cronValidationProxy(expr);
+    const expdFields = this.expandedValues(expr);
+
+    while (previews.length < n) {
+      nextPreview = addSeconds(nextPreview, 1);
+      const current = Scheduler.dateComponents(nextPreview);
+      const matches =
+        expdFields.second.includes(current.second) &&
+        expdFields.minute.includes(current.minute) &&
+        expdFields.hour.includes(current.hour) &&
+        expdFields.dayOfMonth.includes(current.dayOfMonth) &&
+        expdFields.dayOfWeek.includes(current.dayOfWeek) &&
+        expdFields.month.includes(current.month);
+
+      if (matches) {
+        previews.push(nextPreview);
+      }
+    }
+
+    return previews;
+  }
+
+  public previewPast(expr: string, n: number) {
+    let previews: Date[] = [];
+    let nextPreview: Date = new Date();
+    Scheduler.cronValidationProxy(expr);
+    const expdFields = this.expandedValues(expr);
+
+    while (previews.length < n) {
+      nextPreview = subSeconds(nextPreview, 1);
+      const current = Scheduler.dateComponents(nextPreview);
+      const matches =
+        expdFields.second.includes(current.second) &&
+        expdFields.minute.includes(current.minute) &&
+        expdFields.hour.includes(current.hour) &&
+        expdFields.dayOfMonth.includes(current.dayOfMonth) &&
+        expdFields.dayOfWeek.includes(current.dayOfWeek) &&
+        expdFields.month.includes(current.month);
+
+      if (matches) {
+        previews.push(nextPreview);
+      }
+    }
+
+    return previews;
   }
 
   public schedule(
@@ -82,13 +133,13 @@ export class Chronos {
 
     return {
       //@ts-ignore
-      second: !!second
+      second: second
         ? this.patternValidator.expandField(
             second,
             CRON_LIMITS.second[0],
             CRON_LIMITS.second[1]
           )
-        : second,
+        : [],
       dayOfWeek: this.patternValidator.expandField(
         dayOfWeek,
         CRON_LIMITS.dayOfWeek[0],

@@ -7,7 +7,7 @@ export abstract class Scheduler {
   protected static readonly patternValidator: PatternValidator =
     PatternValidator.singleton();
 
-  protected static cronValidationProxy(expr: string): CronParts {
+  public static cronValidationProxy(expr: string): CronParts {
     const parsedCron = this.patternValidator.parseExpr(expr);
     const validCron = this.patternValidator.validateCron(parsedCron);
     if (!validCron) {
@@ -17,13 +17,26 @@ export abstract class Scheduler {
     return parsedCron;
   }
 
+  public static dateComponents(date: Date) {
+    const second = date.getSeconds();
+    const minute = date.getMinutes();
+    const hour = date.getHours();
+    const dayOfMonth = date.getDate();
+    const month = date.getMonth() + 1;
+    const dayOfWeek = date.getDay();
+
+    return {
+      second,
+      minute,
+      hour,
+      dayOfMonth,
+      month,
+      dayOfWeek,
+    };
+  }
   public static matchesCron(moment: Date, cron: CronParts) {
-    const second = moment.getSeconds();
-    const minute = moment.getMinutes();
-    const hour = moment.getHours();
-    const dayOfMonth = moment.getDate();
-    const month = moment.getMonth() + 1;
-    const dayOfWeek = moment.getDay();
+    const { dayOfMonth, dayOfWeek, hour, minute, month, second } =
+      this.dateComponents(moment);
 
     return (
       (cron.second
@@ -39,23 +52,23 @@ export abstract class Scheduler {
         .expandField(cron.minute, CRON_LIMITS.minute[0], CRON_LIMITS.minute[1])
         .includes(minute) &&
       this.patternValidator
-        .expandField(cron.hour, CRON_LIMITS.minute[0], CRON_LIMITS.minute[1])
+        .expandField(cron.hour, CRON_LIMITS.hour[0], CRON_LIMITS.hour[1])
         .includes(hour) &&
       this.patternValidator
         .expandField(
           cron.dayOfMonth,
-          CRON_LIMITS.minute[0],
-          CRON_LIMITS.minute[1]
+          CRON_LIMITS.dayOfMonth[0],
+          CRON_LIMITS.dayOfMonth[1]
         )
         .includes(dayOfMonth) &&
       this.patternValidator
-        .expandField(cron.month, CRON_LIMITS.minute[0], CRON_LIMITS.minute[1])
+        .expandField(cron.month, CRON_LIMITS.month[0], CRON_LIMITS.month[1])
         .includes(month) &&
       this.patternValidator
         .expandField(
           cron.dayOfWeek,
-          CRON_LIMITS.minute[0],
-          CRON_LIMITS.minute[1]
+          CRON_LIMITS.dayOfWeek[0],
+          CRON_LIMITS.dayOfWeek[1]
         )
         .includes(dayOfWeek)
     );

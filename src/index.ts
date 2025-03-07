@@ -6,25 +6,15 @@ export { Chronos } from "./chronos";
 export const chronos = new Chronos();
 
 const c = new Chronos();
-const task1 = c.schedule(
-  CronExpressions.EVERY_SECOND,
+const t = c.schedule(
+  CronExpressions.EVERY_10_SECONDS,
   () => {
-    console.log("Task 1");
+    console.log("Alguma coisa de background");
   },
-  "Task 1"
+  "My General Task"
 );
-// const task2 = c.schedule(CronExpressions.EVERY_10_SECONDS, () => {}, "Task 2");
 
-setTimeout(() => {
-  task1.pause();
-}, 3000);
+const prevNext = c.previewNext(CronExpressions.EVERY_5_MINUTES, 5);
+const prevPrevious = c.previewPast(CronExpressions.EVERY_5_MINUTES, 5);
 
-setTimeout(() => {
-  task1.changeState("RUNNING");
-}, 7000);
-
-setTimeout(() => {
-  task1.stop();
-}, 10000);
-
-c.listTasks();
+console.log("Fluxo normal");
