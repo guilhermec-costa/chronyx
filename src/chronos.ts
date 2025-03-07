@@ -1,4 +1,3 @@
-import { CronMatcher } from "./cron-matcher";
 import { PatternValidator } from "./pattern-validator";
 import { Scheduler } from "./schedulers/scheduler";
 import { WithExpression } from "./schedulers/with-expression";
