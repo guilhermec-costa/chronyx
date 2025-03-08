@@ -1,6 +1,7 @@
 import { TaskManager } from "./task-manager";
 import { CronParts, CronType } from "./types";
 import { v4 as uuidv4, v4 } from "uuid";
+import EventEmitter from "events";
 
 export type TaskStatus = "CREATED" | "RUNNING" | "KILLED" | "PAUSED";
 
@@ -20,12 +21,14 @@ export class Task {
   public cronParts?: CronParts;
   public autoStart: boolean;
   private lastRunAt?: Date;
+  private emitter: EventEmitter;
 
   constructor(
     name: string,
     expression: string,
     handler: () => void,
     cronType: CronType,
+    emitter: EventEmitter,
     cronParts?: CronParts,
     autoStart: boolean = true
   ) {
@@ -37,6 +40,7 @@ export class Task {
     this.status = "CREATED";
     this.cronParts = cronParts;
     this.autoStart = autoStart;
+    this.emitter = emitter;
   }
 
   public prettyPrint() {
@@ -73,7 +77,7 @@ LastRun: ${this.lastRunAt}`
   }
 
   public stop() {
-    TaskManager.singleton().stopTask(this.getId());
+    this.emitter.emit("kill-task", this.getId());
     this.status = "KILLED";
   }
 

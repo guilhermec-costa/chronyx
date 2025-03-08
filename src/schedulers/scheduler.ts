@@ -1,18 +1,22 @@
 import { Configurator } from "../configurator";
+import { CronLogger } from "../logger/logger";
 import { PatternValidator } from "../pattern-validator";
 import { DebugTickerExecutor, Task } from "../task";
 import { TaskManager } from "../task-manager";
 import { CRON_LIMITS, CronParts } from "../types";
+import { dateComponents } from "../utils";
 
 export abstract class Scheduler {
-  protected static readonly taskManager: TaskManager = TaskManager.singleton();
-  protected static readonly patternValidator: PatternValidator =
-    PatternValidator.singleton();
+  protected readonly logger: CronLogger;
+  public constructor(
+    protected readonly taskManager: TaskManager,
+    protected readonly configurator: Configurator,
+    protected readonly patternValidator: PatternValidator
+  ) {
+    this.logger = this.configurator.logger;
+  }
 
-  protected static readonly configurator: Configurator =
-    Configurator.singleton();
-
-  public static cronValidationProxy(expr: string): CronParts {
+  public cronValidationProxy(expr: string): CronParts {
     const parsedCron = this.patternValidator.parseExpr(expr);
     const validCron = this.patternValidator.validateCron(parsedCron);
     if (!validCron) {
@@ -22,7 +26,7 @@ export abstract class Scheduler {
     return parsedCron;
   }
 
-  public static applyAutoStartConfig(t: Task) {
+  public applyAutoStartConfig(t: Task) {
     const { initializationMethod } = this.configurator.configs;
     if (initializationMethod === "respectMyConfig") {
       if (t.autoStart) {
@@ -36,7 +40,7 @@ export abstract class Scheduler {
     }
   }
 
-  protected static debugTickerActivator(t: Task, cb: VoidFunction): number {
+  protected debugTickerActivator(t: Task, cb: VoidFunction): NodeJS.Timeout {
     const tickerId = setInterval(() => {
       if (t.ableToRun()) {
         cb();
@@ -45,26 +49,9 @@ export abstract class Scheduler {
     return tickerId;
   }
 
-  public static dateComponents(date: Date) {
-    const second = date.getSeconds();
-    const minute = date.getMinutes();
-    const hour = date.getHours();
-    const dayOfMonth = date.getDate();
-    const month = date.getMonth() + 1;
-    const dayOfWeek = date.getDay();
-
-    return {
-      second,
-      minute,
-      hour,
-      dayOfMonth,
-      month,
-      dayOfWeek,
-    };
-  }
-  public static matchesCron(moment: Date, cron: CronParts) {
+  public matchesCron(moment: Date, cron: CronParts) {
     const { dayOfMonth, dayOfWeek, hour, minute, month, second } =
-      this.dateComponents(moment);
+      dateComponents(moment);
 
     return (
       (cron.second

@@ -1,18 +1,9 @@
 import { ExpanderFabric } from "./field-expanders/expanderFabric";
 import { CRON_LIMITS, CronParts } from "./types";
+import { dateComponents } from "./utils";
 
 export class PatternValidator {
-  private static instance: PatternValidator;
-
-  private constructor() {}
-
-  public static singleton(): PatternValidator {
-    if (!this.instance) {
-      this.instance = new PatternValidator();
-    }
-
-    return PatternValidator.instance;
-  }
+  public constructor() {}
 
   public parseExpr(expr: string): CronParts {
     const exprParts = expr.trim().split(/\s+/);
@@ -83,6 +74,46 @@ export class PatternValidator {
         CRON_LIMITS.dayOfWeek[0],
         CRON_LIMITS.dayOfWeek[1]
       )
+    );
+  }
+
+  public matchesCron(moment: Date, cron: CronParts) {
+    const { dayOfMonth, dayOfWeek, hour, minute, month, second } =
+      dateComponents(moment);
+
+    return (
+      (cron.second
+        ? this.expandField(
+            cron.second,
+            CRON_LIMITS.second[0],
+            CRON_LIMITS.second[1]
+          ).includes(second)
+        : true) &&
+      this.expandField(
+        cron.minute,
+        CRON_LIMITS.minute[0],
+        CRON_LIMITS.minute[1]
+      ).includes(minute) &&
+      this.expandField(
+        cron.hour,
+        CRON_LIMITS.hour[0],
+        CRON_LIMITS.hour[1]
+      ).includes(hour) &&
+      this.expandField(
+        cron.dayOfMonth,
+        CRON_LIMITS.dayOfMonth[0],
+        CRON_LIMITS.dayOfMonth[1]
+      ).includes(dayOfMonth) &&
+      this.expandField(
+        cron.month,
+        CRON_LIMITS.month[0],
+        CRON_LIMITS.month[1]
+      ).includes(month) &&
+      this.expandField(
+        cron.dayOfWeek,
+        CRON_LIMITS.dayOfWeek[0],
+        CRON_LIMITS.dayOfWeek[1]
+      ).includes(dayOfWeek)
     );
   }
 }

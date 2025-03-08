@@ -1,3 +1,4 @@
+import EventEmitter from "events";
 import { Configurator } from "./configurator";
 import { CronLogger } from "./logger/logger";
 import { Task } from "./task";
@@ -6,29 +7,28 @@ import { CronParts, CronType } from "./types";
 export type TaskExecutionContainer = Map<
   String,
   {
-    mainExecutorId: number;
-    debugTickerId?: number;
+    mainExecutorId: NodeJS.Timeout;
+    debugTickerId?: NodeJS.Timeout;
   }
 >;
 
 export class TaskManager {
   public taskStorage: Array<Task>;
   public executorStorage: TaskExecutionContainer;
-  private static instance: TaskManager;
-  private configurator: Configurator;
+  private readonly configurator: Configurator;
+  private readonly logger: CronLogger;
+  private readonly eventEmitter: EventEmitter;
 
-  private constructor() {
+  public constructor(configurator: Configurator) {
     this.taskStorage = [];
     this.executorStorage = new Map();
-    this.configurator = Configurator.singleton();
-  }
+    this.configurator = configurator;
+    this.logger = this.configurator.logger;
+    this.eventEmitter = new EventEmitter();
 
-  public static singleton(): TaskManager {
-    if (!this.instance) {
-      this.instance = new TaskManager();
-    }
-
-    return TaskManager.instance;
+    this.eventEmitter.on("kill-task", (taskId) => {
+      this.stopTask(taskId);
+    });
   }
 
   public makeTask(
@@ -39,9 +39,17 @@ export class TaskManager {
     autoStart?: boolean,
     parts?: CronParts
   ): Task {
-    const t = new Task(name, repr, handler, type, parts, autoStart);
+    const t = new Task(
+      name,
+      repr,
+      handler,
+      type,
+      this.eventEmitter,
+      parts,
+      autoStart
+    );
     this.taskStorage.push(t);
-    CronLogger.debug(`Task "${t.getId()}" created`);
+    this.logger.debug(`Task "${t.getId()}" created`);
     return t;
   }
 
@@ -51,8 +59,8 @@ export class TaskManager {
 
   public addExecutorConfig(
     t: Task,
-    mainExecutorId: number,
-    debugTickerExecutorId?: number
+    mainExecutorId: NodeJS.Timeout,
+    debugTickerExecutorId?: NodeJS.Timeout
   ) {
     this.executorStorage.set(t.getId(), {
       mainExecutorId: mainExecutorId,
@@ -62,13 +70,12 @@ export class TaskManager {
 
   public stopTask(tId: string) {
     const tConfig = this.executorStorage.get(tId);
-    console.log("Task config: ", tConfig);
     clearInterval(tConfig?.mainExecutorId);
     if (tConfig?.debugTickerId) {
       clearInterval(tConfig.debugTickerId);
     }
     this.executorStorage.delete(tId);
 
-    CronLogger.debug(`Task "${tId}" killed`);
+    this.logger.debug(`Task "${tId}" killed`);
   }
 }

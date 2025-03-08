@@ -4,12 +4,12 @@ import { TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
 
 export class WithOneShot extends Scheduler {
-  public static schedule({
+  public schedule({
     handler,
     repr,
     options: { autoStart, debugTick, name = "unknown" },
   }: TaskArgs) {
-    CronLogger.debug(`Scheduling task using One Shot method: ${repr}`);
+    this.logger.debug(`Scheduling task using One Shot method: ${repr}`);
     const moment = new Date(repr);
     const isMomentValid = moment.getTime() >= Date.now();
     if (!isMomentValid) {

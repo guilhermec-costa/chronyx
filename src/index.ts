@@ -14,26 +14,35 @@ export const chronos = new Chronos({
   },
 });
 
-const c = new Chronos({
+const c1 = new Chronos({
   logger: {
     level: CronLogLevel.DEBUG,
     transporters: [
       new CronLogTransport.ConsoleTransport(),
       new CronLogTransport.FilesystemTransport({
-        filepath: "./cron-logs",
+        filepath: "./cron-logs-1",
       }),
     ],
   },
-  initializationMethod: "!autoStartAll",
+  initializationMethod: "autoStartAll",
 });
 
-const t = c.schedule(
-  CronExpressions.EVERY_SECOND,
-  () => {
-    console.log("Hello world");
+const c2 = new Chronos({
+  logger: {
+    level: CronLogLevel.DEBUG,
+    transporters: [
+      new CronLogTransport.FilesystemTransport({
+        filepath: "./cron-logs-2",
+      }),
+    ],
   },
-  {
-    name: "Task 1",
-    autoStart: true,
-  }
-);
+  initializationMethod: "autoStartAll",
+});
+
+const t1 = c1.schedule(CronExpressions.EVERY_SECOND, () => {
+  console.log("Using Chronos 1");
+});
+
+const t2 = c2.schedule(CronExpressions.EVERY_5_SECONDS, () => {
+  console.log("Using Chronos 2");
+});

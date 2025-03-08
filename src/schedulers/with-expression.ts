@@ -1,15 +1,16 @@
-import { CronLogger } from "../logger/logger";
-import { DebugTickerExecutor, Task } from "../task";
+import { Task } from "../task";
 import { TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
 
 export class WithExpression extends Scheduler {
-  public static schedule({
+  public schedule({
     handler,
     repr,
     options: { autoStart, debugTick, name = "unknown" },
   }: TaskArgs): Task {
-    CronLogger.debug(`Scheduling task using Expression method: ${repr}`);
+    this.configurator.logger.debug(
+      `Scheduling task using Expression method: ${repr}`
+    );
     const parsedCron = this.cronValidationProxy(repr as string);
     const t = this.taskManager.makeTask(
       name,

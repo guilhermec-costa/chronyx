@@ -20,15 +20,37 @@ import { addSeconds, subSeconds } from "date-fns";
 export class Chronos {
   private readonly taskManager: TaskManager;
   private readonly patternValidator: PatternValidator;
+  private readonly configurator: Configurator;
+  private readonly logger: CronLogger;
+  private readonly withExpressionScheduler: WithExpression;
+  private readonly withOneShotScheduler: WithOneShot;
+  private readonly withRecurrenceScheduler: WithRecurrence;
 
   constructor(config?: ConfigOptions) {
-    this.taskManager = TaskManager.singleton();
-    this.patternValidator = PatternValidator.singleton();
-    config && Configurator.singleton().addConfig(config);
-    CronLogger.info("Chronos initialized");
+    this.configurator = new Configurator(config || {});
+    this.taskManager = new TaskManager(this.configurator);
+    this.patternValidator = new PatternValidator();
+    this.logger = this.configurator.logger;
+    this.logger.info("Chronos initialized");
     if (config) {
-      CronLogger.info("Configuration applied to Chronos instance");
+      this.logger.info("Configuration applied to Chronos instance");
     }
+
+    this.withExpressionScheduler = new WithExpression(
+      this.taskManager,
+      this.configurator,
+      this.patternValidator
+    );
+    this.withOneShotScheduler = new WithOneShot(
+      this.taskManager,
+      this.configurator,
+      this.patternValidator
+    );
+    this.withRecurrenceScheduler = new WithRecurrence(
+      this.taskManager,
+      this.configurator,
+      this.patternValidator
+    );
   }
 
   public listTasks() {
@@ -46,11 +68,23 @@ export class Chronos {
     return this.taskManager.taskStorage;
   }
 
+  public cronValidationProxy(expr: string): CronParts {
+    const parsedCron = this.patternValidator.parseExpr(expr);
+    const validCron = this.patternValidator.validateCron(parsedCron);
+    if (!validCron) {
+      throw new Error("Expression is not valid");
+    }
+
+    return parsedCron;
+  }
+
   public previewNext(expr: string, n: number = 10) {
-    CronLogger.debug(`Generating ${n} future previews for expression: ${expr}`);
+    this.logger.debug(
+      `Generating ${n} future previews for expression: ${expr}`
+    );
     let previews: Date[] = [];
     let nextPreview: Date = new Date();
-    const parsedCron = Scheduler.cronValidationProxy(expr);
+    const parsedCron = this.cronValidationProxy(expr);
     while (previews.length < n) {
       nextPreview = addSeconds(nextPreview, 1);
       if (this.matchesCron(nextPreview, parsedCron)) {
@@ -61,10 +95,10 @@ export class Chronos {
   }
 
   public previewPast(expr: string, n: number) {
-    CronLogger.debug(`Generating ${n} past previews for expression: ${expr}`);
+    this.logger.debug(`Generating ${n} past previews for expression: ${expr}`);
     let previews: Date[] = [];
     let nextPreview: Date = new Date();
-    const parsedCron = Scheduler.cronValidationProxy(expr);
+    const parsedCron = this.cronValidationProxy(expr);
     while (previews.length < n) {
       nextPreview = subSeconds(nextPreview, 1);
       if (this.matchesCron(nextPreview, parsedCron)) {
@@ -77,22 +111,22 @@ export class Chronos {
   public schedule(
     expr: number | string | CronExpressions,
     handler: VoidFunction,
-    options: SchedulingOptions
+    options?: SchedulingOptions
   ): Task {
     switch (typeof expr) {
       case "string": {
-        return WithExpression.schedule({
+        return this.withExpressionScheduler.schedule({
           handler,
           repr: expr.toString(),
-          options,
+          options: options || {},
         });
       }
 
       case "number": {
-        return WithRecurrence.schedule({
+        return this.withRecurrenceScheduler.schedule({
           handler,
           repr: expr.toString(),
-          options,
+          options: options || {},
         });
       }
     }
@@ -107,7 +141,7 @@ export class Chronos {
     handler: VoidFunction,
     options: SchedulingOptions
   ): Task {
-    return WithRecurrence.schedule({
+    return this.withRecurrenceScheduler.schedule({
       handler,
       repr: freq.toString(),
       options,
@@ -119,7 +153,7 @@ export class Chronos {
     handler: VoidFunction,
     options: SchedulingOptions
   ): Task {
-    return WithOneShot.schedule({
+    return this.withOneShotScheduler.schedule({
       handler,
       repr: moment.toString(),
       options,
@@ -173,6 +207,6 @@ export class Chronos {
   }
 
   public matchesCron(moment: Date, cron: CronParts) {
-    return Scheduler.matchesCron(moment, cron);
+    return this.patternValidator.matchesCron(moment, cron);
   }
 }
