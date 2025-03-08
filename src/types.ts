@@ -1,4 +1,5 @@
 import { CronExpressions } from "./defined-expr";
+import { LoggerOptions } from "./logger";
 
 export type CronParts = {
   second?: string;
@@ -37,12 +38,6 @@ export type SchedulingOptions = {
   debugTick?: VoidFunction;
   autoStart?: boolean;
 };
-
-export type LogLevel = "debug" | "info" | "warn" | "error" | "none";
-
-export interface LoggerOptions {
-  level?: LogLevel;
-}
 
 export type ConfigOptions = {
   logger?: LoggerOptions;

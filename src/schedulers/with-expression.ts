@@ -1,3 +1,4 @@
+import { CronLogger } from "../logger";
 import { DebugTickerExecutor, Task } from "../task";
 import { TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
@@ -36,6 +37,7 @@ export class WithExpression extends Scheduler {
       debugTickerId: tickerId,
     });
 
+    CronLogger.debug("Task created");
     return t;
   }
 }

@@ -1,5 +1,6 @@
 import { Chronos } from "./chronos";
 import { CronExpressions } from "./defined-expr";
+import { CronLogLevel } from "./logger";
 
 export * from "./types";
 export * from "./defined-expr";
@@ -7,13 +8,13 @@ export { Chronos } from "./chronos";
 export const chronos = new Chronos({
   initializationMethod: "respectMyConfig",
   logger: {
-    level: "none",
+    level: CronLogLevel.NONE,
   },
 });
 
 const c = new Chronos({
   logger: {
-    level: "debug",
+    level: CronLogLevel.DEBUG,
   },
   initializationMethod: "respectMyConfig",
 });
@@ -25,6 +26,6 @@ const t = c.schedule(
   },
   {
     name: "Task 1",
-    autoStart: false,
+    autoStart: true,
   }
 );

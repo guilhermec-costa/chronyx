@@ -1,3 +1,4 @@
+import { CronLogger } from "./logger";
 import { ConfigOptions } from "./types";
 
 export class Configurator {
@@ -15,5 +16,8 @@ export class Configurator {
 
   public addConfig(opts: ConfigOptions) {
     this.configs = opts;
+    CronLogger.configure({
+      level: this.configs.logger?.level,
+    });
   }
 }
