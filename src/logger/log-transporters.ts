@@ -1,3 +1,5 @@
+import fs from "fs";
+
 export interface LogTransport {
   log(message: string): void;
 }
@@ -9,9 +11,18 @@ export namespace CronLogTransport {
     }
   }
 
+  export type FilesystemTransportOptions = {
+    filepath: string;
+  };
   export class FilesystemTransport implements LogTransport {
+    private fileStream: fs.WriteStream;
+
+    constructor(private readonly opts: FilesystemTransportOptions) {
+      this.fileStream = fs.createWriteStream(opts.filepath);
+    }
+
     log(message: string): void {
-      console.log("File system transport");
+      this.fileStream.write(`${message}\n`);
     }
   }
 }

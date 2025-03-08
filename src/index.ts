@@ -17,7 +17,12 @@ export const chronos = new Chronos({
 const c = new Chronos({
   logger: {
     level: CronLogLevel.DEBUG,
-    transporters: [new CronLogTransport.ConsoleTransport()],
+    transporters: [
+      new CronLogTransport.ConsoleTransport(),
+      new CronLogTransport.FilesystemTransport({
+        filepath: "./cron-logs",
+      }),
+    ],
   },
   initializationMethod: "!autoStartAll",
 });

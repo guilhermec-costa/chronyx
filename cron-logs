@@ -1,0 +1,4 @@
+[2025-03-08T17:44:00.557Z] [INFO] Chronos initialized
+[2025-03-08T17:44:00.558Z] [INFO] Configuration applied to Chronos instance
+[2025-03-08T17:44:00.558Z] [DEBUG] Scheduling task using Expression method: * * * * * *
+[2025-03-08T17:44:00.558Z] [DEBUG] Task "2752a9eb-b105-43a9-9529-bb6bb45268ad" created
