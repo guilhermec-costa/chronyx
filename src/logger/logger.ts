@@ -3,7 +3,7 @@ import { CronLogTransport, LogTransport } from "./log-transporters";
 
 export interface LoggerOptions {
   level: CronLogLevel;
-  transporters: Array<LogTransport>;
+  transporters?: Array<LogTransport>;
 }
 
 export class CronLogger {
@@ -12,11 +12,10 @@ export class CronLogger {
 
   public constructor({
     level = CronLogLevel.INFO,
-    transporters,
+    transporters = [new CronLogTransport.ConsoleTransport()],
   }: LoggerOptions) {
     this.level = level;
-    this.logTransporters =
-      transporters || new CronLogTransport.ConsoleTransport();
+    this.logTransporters = transporters;
   }
 
   public log(level: CronLogLevel, msg: string) {

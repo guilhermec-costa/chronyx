@@ -8,9 +8,7 @@ export class WithExpression extends Scheduler {
     repr,
     options: { autoStart, debugTick, name = "unknown" },
   }: TaskArgs): Task {
-    this.configurator.logger.debug(
-      `Scheduling task using Expression method: ${repr}`
-    );
+    this.logger.debug(`Scheduling task using Expression method: ${repr}`);
     const parsedCron = this.cronValidationProxy(repr as string);
     const t = this.taskManager.makeTask(
       name,

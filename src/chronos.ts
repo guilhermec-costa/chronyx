@@ -2,7 +2,6 @@ import { Configurator } from "./configurator";
 import { CronExpressions } from "./defined-expr";
 import { CronLogger } from "./logger/logger";
 import { PatternValidator } from "./pattern-validator";
-import { Scheduler } from "./schedulers/scheduler";
 import { WithExpression } from "./schedulers/with-expression";
 import { WithOneShot } from "./schedulers/with-one-shot";
 import { WithRecurrence } from "./schedulers/with-recurrence";
@@ -17,6 +16,9 @@ import {
 } from "./types";
 import { addSeconds, subSeconds } from "date-fns";
 
+/**
+ * Main class to manage scheduling tasks using cron-like expressions.
+ */
 export class Chronos {
   private readonly taskManager: TaskManager;
   private readonly patternValidator: PatternValidator;
@@ -26,6 +28,10 @@ export class Chronos {
   private readonly withOneShotScheduler: WithOneShot;
   private readonly withRecurrenceScheduler: WithRecurrence;
 
+  /**
+   * Initializes the Chronos scheduler with optional configuration.
+   * @param config Optional configuration object for the scheduler.
+   */
   constructor(config?: ConfigOptions) {
     this.configurator = new Configurator(config || {});
     this.taskManager = new TaskManager(this.configurator);
@@ -53,6 +59,9 @@ export class Chronos {
     );
   }
 
+  /**
+   * Lists all registered tasks with their details.
+   */
   public listTasks() {
     if (this.taskManager.taskStorage.length === 0) {
       console.log("Task Storage is empty");
@@ -64,10 +73,20 @@ export class Chronos {
     }
   }
 
+  /**
+   * Returns the list of all registered tasks.
+   * @returns Array of Task objects.
+   */
   public tasks() {
     return this.taskManager.taskStorage;
   }
 
+  /**
+   * Validates and parses a cron expression.
+   * @param expr The cron expression to validate.
+   * @returns Parsed CronParts if valid.
+   * @throws Error if the expression is invalid.
+   */
   public cronValidationProxy(expr: string): CronParts {
     const parsedCron = this.patternValidator.parseExpr(expr);
     const validCron = this.patternValidator.validateCron(parsedCron);
@@ -78,6 +97,12 @@ export class Chronos {
     return parsedCron;
   }
 
+  /**
+   * Generates future execution times based on the cron expression.
+   * @param expr The cron expression.
+   * @param n Number of future times to generate (default: 10).
+   * @returns Array of future execution dates.
+   */
   public previewNext(expr: string, n: number = 10) {
     this.logger.debug(
       `Generating ${n} future previews for expression: ${expr}`
@@ -94,6 +119,12 @@ export class Chronos {
     return previews;
   }
 
+  /**
+   * Generates past execution times based on the cron expression.
+   * @param expr The cron expression.
+   * @param n Number of past times to generate.
+   * @returns Array of past execution dates.
+   */
   public previewPast(expr: string, n: number) {
     this.logger.debug(`Generating ${n} past previews for expression: ${expr}`);
     let previews: Date[] = [];
@@ -108,6 +139,13 @@ export class Chronos {
     return previews;
   }
 
+  /**
+   * Schedules a task based on a cron expression or interval.
+   * @param expr Cron expression or interval in seconds.
+   * @param handler Function to execute.
+   * @param options Additional scheduling options.
+   * @returns The scheduled Task object.
+   */
   public schedule(
     expr: number | string | CronExpressions,
     handler: VoidFunction,
@@ -136,6 +174,13 @@ export class Chronos {
     this.schedule(expr, handler, options);
   }
 
+  /**
+   * Executes a task at a fixed frequency in seconds.
+   * @param freq Frequency in seconds.
+   * @param handler Function to execute.
+   * @param options Additional scheduling options.
+   * @returns The scheduled Task object.
+   */
   public execEvery(
     freq: number,
     handler: VoidFunction,
@@ -148,6 +193,13 @@ export class Chronos {
     });
   }
 
+  /**
+   * Schedules a one-time task.
+   * @param moment Date of execution.
+   * @param handler Function to execute.
+   * @param options Additional scheduling options.
+   * @returns The scheduled Task object.
+   */
   public oneShot(
     moment: Date,
     handler: VoidFunction,
@@ -206,6 +258,12 @@ export class Chronos {
     };
   }
 
+  /**
+   * Checks if a given date matches a cron pattern.
+   * @param moment Date to check.
+   * @param cron Cron pattern to match against.
+   * @returns True if the date matches the cron pattern.
+   */
   public matchesCron(moment: Date, cron: CronParts) {
     return this.patternValidator.matchesCron(moment, cron);
   }
