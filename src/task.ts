@@ -13,7 +13,7 @@ export class DebugTickerExecutor {
 export class Task {
   private readonly id: string;
   public name: string;
-  public repr: string;
+  public expression: string;
   public handler: () => void;
   private cronType: CronType;
   private status: TaskStatus;
@@ -21,14 +21,14 @@ export class Task {
 
   constructor(
     name: string,
-    repr: string,
+    expression: string,
     handler: () => void,
     cronType: CronType,
     cronParts?: CronParts
   ) {
     this.id = uuidv4();
     this.name = name;
-    this.repr = repr;
+    this.expression = expression;
     this.handler = handler;
     this.cronType = cronType;
     this.status = "CREATED";
@@ -45,7 +45,7 @@ ID: ${this.id}
 Name: ${this.name}
 Type: ${this.cronType}
 Status: ${this.status}
-Expression: ${this.repr}
+Expression: ${this.expression}
 Handler: ${this.handler.toString()}`
     );
   }

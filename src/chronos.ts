@@ -40,50 +40,26 @@ export class Chronos {
   public previewNext(expr: string, n: number = 10) {
     let previews: Date[] = [];
     let nextPreview: Date = new Date();
-    Scheduler.cronValidationProxy(expr);
-    const expdFields = this.expandedValues(expr);
-
+    const parsedCron = Scheduler.cronValidationProxy(expr);
     while (previews.length < n) {
       nextPreview = addSeconds(nextPreview, 1);
-      const current = Scheduler.dateComponents(nextPreview);
-      const matches =
-        expdFields.second.includes(current.second) &&
-        expdFields.minute.includes(current.minute) &&
-        expdFields.hour.includes(current.hour) &&
-        expdFields.dayOfMonth.includes(current.dayOfMonth) &&
-        expdFields.dayOfWeek.includes(current.dayOfWeek) &&
-        expdFields.month.includes(current.month);
-
-      if (matches) {
+      if (this.matchesCron(nextPreview, parsedCron)) {
         previews.push(nextPreview);
       }
     }
-
     return previews;
   }
 
   public previewPast(expr: string, n: number) {
     let previews: Date[] = [];
     let nextPreview: Date = new Date();
-    Scheduler.cronValidationProxy(expr);
-    const expdFields = this.expandedValues(expr);
-
+    const parsedCron = Scheduler.cronValidationProxy(expr);
     while (previews.length < n) {
       nextPreview = subSeconds(nextPreview, 1);
-      const current = Scheduler.dateComponents(nextPreview);
-      const matches =
-        expdFields.second.includes(current.second) &&
-        expdFields.minute.includes(current.minute) &&
-        expdFields.hour.includes(current.hour) &&
-        expdFields.dayOfMonth.includes(current.dayOfMonth) &&
-        expdFields.dayOfWeek.includes(current.dayOfWeek) &&
-        expdFields.month.includes(current.month);
-
-      if (matches) {
+      if (this.matchesCron(nextPreview, parsedCron)) {
         previews.push(nextPreview);
       }
     }
-
     return previews;
   }
 

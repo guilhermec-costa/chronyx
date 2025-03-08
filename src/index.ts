@@ -13,7 +13,7 @@ const c = new Chronos({
 });
 
 const t = c.schedule(
-  CronExpressions.EVERY_SECOND,
+  CronExpressions.EVERY_5_SECONDS,
   () => {
     console.log("Task 1 executing");
   },
@@ -23,14 +23,4 @@ const t = c.schedule(
   }
 );
 
-c.execEvery(
-  1000,
-  () => {
-    console.log("hey");
-  },
-  {
-    autoStart: true,
-  }
-);
-
-c.listTasks();
+console.log(c.previewNext(t.expression, 10));
