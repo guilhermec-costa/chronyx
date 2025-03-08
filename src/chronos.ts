@@ -5,7 +5,13 @@ import { WithOneShot } from "./schedulers/with-one-shot";
 import { WithRecurrence } from "./schedulers/with-recurrence";
 import { Task } from "./task";
 import { TaskManager } from "./task-manager";
-import { CRON_LIMITS, CronParts, ExecFrequency } from "./types";
+import {
+  CRON_LIMITS,
+  CronParts,
+  ExecFrequency,
+  SchedulingConstructor,
+  SchedulingOptions,
+} from "./types";
 import { addSeconds, subSeconds } from "date-fns";
 
 export class Chronos {
@@ -81,62 +87,52 @@ export class Chronos {
   public schedule(
     expr: number | string,
     handler: VoidFunction,
-    name: string = "unknown",
-    debugTick: VoidFunction,
-    autoStart: boolean = true
+    options: SchedulingOptions
   ): Task {
     switch (typeof expr) {
       case "string": {
         return WithExpression.schedule({
           handler,
-          name: name,
           repr: expr.toString(),
-          debugTick,
-          autoStart,
+          options,
         });
       }
 
       case "number": {
         return WithRecurrence.schedule({
           handler,
-          name: name || "unknown",
           repr: expr.toString(),
-          debugTick,
-          autoStart,
+          options,
         });
       }
     }
   }
 
+  public makeCron({ expr, handler, options }: SchedulingConstructor) {
+    this.schedule(expr, handler, options);
+  }
+
   public execEvery(
     freq: number | ExecFrequency,
     handler: VoidFunction,
-    name: string = "unknown",
-    debugTick: VoidFunction,
-    autoStart: boolean
+    options: SchedulingOptions
   ): Task {
     return WithRecurrence.schedule({
       handler,
-      name: name,
       repr: freq.toString(),
-      debugTick,
-      autoStart,
+      options,
     });
   }
 
   public oneShot(
     moment: Date,
     handler: VoidFunction,
-    name: string = "unknown",
-    debugTick: VoidFunction,
-    autoStart: boolean
+    options: SchedulingOptions
   ): Task {
     return WithOneShot.schedule({
       handler,
-      name: name,
       repr: moment.toString(),
-      debugTick,
-      autoStart,
+      options,
     });
   }
 

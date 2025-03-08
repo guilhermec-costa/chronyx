@@ -69,7 +69,11 @@ export class Task {
   }
 
   public ableToRun() {
-    return this.status !== "PAUSED" && this.status !== "KILLED";
+    return (
+      this.status !== "PAUSED" &&
+      this.status !== "KILLED" &&
+      this.status !== "CREATED"
+    );
   }
 
   public stop() {

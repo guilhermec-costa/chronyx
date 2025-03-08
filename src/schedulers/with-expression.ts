@@ -5,10 +5,8 @@ import { Scheduler } from "./scheduler";
 export class WithExpression extends Scheduler {
   public static schedule({
     handler,
-    name,
     repr,
-    debugTick,
-    autoStart,
+    options: { autoStart, debugTick, name },
   }: TaskArgs): Task {
     const parsedCron = this.cronValidationProxy(repr as string);
     const t = this.taskManager.makeTask(
@@ -20,6 +18,7 @@ export class WithExpression extends Scheduler {
       0
     );
 
+    if (autoStart) t.resume();
     const i = setInterval(() => {
       const now = new Date();
       if (this.matchesCron(now, parsedCron) && t.ableToRun()) {
@@ -29,7 +28,6 @@ export class WithExpression extends Scheduler {
 
     if (debugTick) this.debugTickerActivationProxy(t, debugTick);
     t.setExecutorId(i);
-    t.resume();
     return t;
   }
 }

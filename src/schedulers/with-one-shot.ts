@@ -3,7 +3,11 @@ import { TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
 
 export class WithOneShot extends Scheduler {
-  public static schedule({ handler, name, repr, debugTick }: TaskArgs) {
+  public static schedule({
+    handler,
+    repr,
+    options: { autoStart, debugTick, name },
+  }: TaskArgs) {
     const moment = new Date(repr);
     const isMomentValid = moment.getTime() >= Date.now();
     if (!isMomentValid) {
@@ -19,6 +23,7 @@ export class WithOneShot extends Scheduler {
       parsedCron,
       0
     );
+    if (autoStart) t.resume();
     const i = setInterval(() => {
       if (Date.now() >= moment.getTime() && t.ableToRun()) {
         handler();
@@ -28,7 +33,6 @@ export class WithOneShot extends Scheduler {
 
     if (debugTick) this.debugTickerActivationProxy(t, debugTick);
     t.setExecutorId(i);
-    t.resume();
     return t;
   }
 }

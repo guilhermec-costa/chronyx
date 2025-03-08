@@ -23,9 +23,19 @@ export const CRON_LIMITS = {
 export type CronType = "IntervalBased" | "ExpressionBased";
 
 export type TaskArgs = {
-  name: string;
   repr: string;
   handler: () => void;
-  debugTick: () => void;
+  options: SchedulingOptions;
+};
+
+export type SchedulingConstructor = {
+  expr: number | ExecFrequency;
+  handler: VoidFunction;
+  options: SchedulingOptions;
+};
+
+export type SchedulingOptions = {
+  name: string;
+  debugTick: VoidFunction;
   autoStart: boolean;
 };

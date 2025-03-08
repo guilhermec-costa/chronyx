@@ -3,7 +3,11 @@ import { TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
 
 export class WithRecurrence extends Scheduler {
-  static schedule({ handler, name, repr, debugTick }: TaskArgs): Task {
+  static schedule({
+    handler,
+    repr,
+    options: { autoStart, debugTick, name },
+  }: TaskArgs): Task {
     const timeout = Number(repr);
     const parsedCron = this.cronValidationProxy(repr.toString());
     if (timeout < 0) {
@@ -19,6 +23,7 @@ export class WithRecurrence extends Scheduler {
       0
     );
 
+    if (autoStart) t.resume();
     const i = setInterval(() => {
       if (t.ableToRun()) {
         handler();
@@ -27,7 +32,6 @@ export class WithRecurrence extends Scheduler {
 
     if (debugTick) this.debugTickerActivationProxy(t, debugTick);
     t.setExecutorId(i);
-    t.resume();
     return t;
   }
 }
