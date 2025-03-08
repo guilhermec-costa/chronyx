@@ -1,6 +1,4 @@
-export enum ExecFrequency {
-  EVERY_5_MINUTES = 5 * 60 * 1000,
-}
+import { CronExpressions } from "./defined-expr";
 
 export type CronParts = {
   second?: string;
@@ -29,13 +27,24 @@ export type TaskArgs = {
 };
 
 export type SchedulingConstructor = {
-  expr: number | ExecFrequency;
+  expr: number | string | CronExpressions;
   handler: VoidFunction;
   options: SchedulingOptions;
 };
 
 export type SchedulingOptions = {
-  name: string;
-  debugTick: VoidFunction;
-  autoStart: boolean;
+  name?: string;
+  debugTick?: VoidFunction;
+  autoStart?: boolean;
+};
+
+export type LogLevel = "debug" | "info" | "warn" | "error" | "none";
+
+export interface LoggerOptions {
+  level?: LogLevel;
+}
+
+export type ConfigOptions = {
+  logger?: LoggerOptions;
+  initializationMethod?: "autoStartAll" | "!autoStartAll";
 };

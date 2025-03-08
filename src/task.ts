@@ -17,7 +17,6 @@ export class Task {
   private cronType: CronType;
   private status: TaskStatus;
   public cronParts: CronParts;
-  private timeZone: string;
   private debugTicker?: DebugTickerExecutor;
 
   constructor(
@@ -26,7 +25,7 @@ export class Task {
     handler: () => void,
     cronType: CronType,
     cronParts: CronParts,
-    timeZone: string = "UTC",
+    // timeZone: string = "UTC",
     executorId?: number,
     debugerTicker?: DebugTickerExecutor
   ) {
@@ -38,7 +37,6 @@ export class Task {
     this.cronType = cronType;
     this.status = "CREATED";
     this.cronParts = cronParts;
-    this.timeZone = timeZone;
     this.debugTicker = debugerTicker;
   }
 

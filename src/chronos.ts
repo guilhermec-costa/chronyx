@@ -1,3 +1,5 @@
+import { Configurator } from "./configurator";
+import { CronExpressions } from "./defined-expr";
 import { PatternValidator } from "./pattern-validator";
 import { Scheduler } from "./schedulers/scheduler";
 import { WithExpression } from "./schedulers/with-expression";
@@ -6,9 +8,9 @@ import { WithRecurrence } from "./schedulers/with-recurrence";
 import { Task } from "./task";
 import { TaskManager } from "./task-manager";
 import {
+  ConfigOptions,
   CRON_LIMITS,
   CronParts,
-  ExecFrequency,
   SchedulingConstructor,
   SchedulingOptions,
 } from "./types";
@@ -18,9 +20,10 @@ export class Chronos {
   private readonly taskManager: TaskManager;
   private readonly patternValidator: PatternValidator;
 
-  constructor() {
+  constructor(config?: ConfigOptions) {
     this.taskManager = TaskManager.singleton();
     this.patternValidator = PatternValidator.singleton();
+    config && Configurator.singleton().addConfig(config);
   }
 
   public listTasks() {
@@ -85,7 +88,7 @@ export class Chronos {
   }
 
   public schedule(
-    expr: number | string,
+    expr: number | string | CronExpressions,
     handler: VoidFunction,
     options: SchedulingOptions
   ): Task {
@@ -113,7 +116,7 @@ export class Chronos {
   }
 
   public execEvery(
-    freq: number | ExecFrequency,
+    freq: number,
     handler: VoidFunction,
     options: SchedulingOptions
   ): Task {

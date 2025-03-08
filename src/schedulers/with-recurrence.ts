@@ -6,7 +6,7 @@ export class WithRecurrence extends Scheduler {
   static schedule({
     handler,
     repr,
-    options: { autoStart, debugTick, name },
+    options: { autoStart, debugTick, name = "unknown" },
   }: TaskArgs): Task {
     const timeout = Number(repr);
     const parsedCron = this.cronValidationProxy(repr.toString());
