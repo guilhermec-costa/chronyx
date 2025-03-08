@@ -14,10 +14,11 @@ export class WithExpression extends Scheduler {
       repr,
       handler,
       "ExpressionBased",
+      autoStart,
       parsedCron
     );
 
-    if (autoStart) t.resume();
+    this.applyAutoStartConfig(t);
     const i = setInterval(() => {
       const now = new Date();
       if (this.matchesCron(now, parsedCron) && t.ableToRun()) {

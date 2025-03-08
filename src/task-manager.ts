@@ -35,9 +35,10 @@ export class TaskManager {
     repr: string,
     handler: () => void,
     type: CronType,
+    autoStart?: boolean,
     parts?: CronParts
   ): Task {
-    const t = new Task(name, repr, handler, type, parts);
+    const t = new Task(name, repr, handler, type, parts, autoStart);
     this.taskStorage.push(t);
     return t;
   }

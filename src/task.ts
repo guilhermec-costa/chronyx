@@ -18,13 +18,15 @@ export class Task {
   private cronType: CronType;
   private status: TaskStatus;
   public cronParts?: CronParts;
+  public autoStart: boolean;
 
   constructor(
     name: string,
     expression: string,
     handler: () => void,
     cronType: CronType,
-    cronParts?: CronParts
+    cronParts?: CronParts,
+    autoStart: boolean = true
   ) {
     this.id = uuidv4();
     this.name = name;
@@ -33,6 +35,7 @@ export class Task {
     this.cronType = cronType;
     this.status = "CREATED";
     this.cronParts = cronParts;
+    this.autoStart = autoStart;
   }
 
   public prettyPrint() {
@@ -46,7 +49,8 @@ Name: ${this.name}
 Type: ${this.cronType}
 Status: ${this.status}
 Expression: ${this.expression}
-Handler: ${this.handler.toString()}`
+Handler: ${this.handler.toString()}
+AutoStart: ${this.autoStart}`
     );
   }
 

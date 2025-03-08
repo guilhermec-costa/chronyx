@@ -4,23 +4,27 @@ import { CronExpressions } from "./defined-expr";
 export * from "./types";
 export * from "./defined-expr";
 export { Chronos } from "./chronos";
-export const chronos = new Chronos();
+export const chronos = new Chronos({
+  initializationMethod: "respectMyConfig",
+  logger: {
+    level: "none",
+  },
+});
 
 const c = new Chronos({
   logger: {
     level: "debug",
   },
+  initializationMethod: "respectMyConfig",
 });
 
 const t = c.schedule(
-  CronExpressions.EVERY_5_SECONDS,
+  CronExpressions.EVERY_SECOND,
   () => {
-    console.log("Task 1 executing");
+    console.log("Hello world");
   },
   {
-    autoStart: false,
     name: "Task 1",
+    autoStart: false,
   }
 );
-
-console.log(c.previewNext(t.expression, 10));

@@ -1,3 +1,4 @@
+import { Configurator } from "../configurator";
 import { PatternValidator } from "../pattern-validator";
 import { DebugTickerExecutor, Task } from "../task";
 import { TaskManager } from "../task-manager";
@@ -8,6 +9,9 @@ export abstract class Scheduler {
   protected static readonly patternValidator: PatternValidator =
     PatternValidator.singleton();
 
+  protected static readonly configurator: Configurator =
+    Configurator.singleton();
+
   public static cronValidationProxy(expr: string): CronParts {
     const parsedCron = this.patternValidator.parseExpr(expr);
     const validCron = this.patternValidator.validateCron(parsedCron);
@@ -16,6 +20,20 @@ export abstract class Scheduler {
     }
 
     return parsedCron;
+  }
+
+  public static applyAutoStartConfig(t: Task) {
+    const { initializationMethod } = this.configurator.configs;
+    if (initializationMethod === "respectMyConfig") {
+      if (t.autoStart) {
+        t.resume();
+      }
+      return;
+    }
+    if (initializationMethod === "autoStartAll") {
+      t.resume();
+      return;
+    }
   }
 
   protected static debugTickerActivator(t: Task, cb: VoidFunction): number {

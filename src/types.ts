@@ -46,5 +46,5 @@ export interface LoggerOptions {
 
 export type ConfigOptions = {
   logger?: LoggerOptions;
-  initializationMethod?: "autoStartAll" | "!autoStartAll";
+  initializationMethod?: "autoStartAll" | "!autoStartAll" | "respectMyConfig";
 };

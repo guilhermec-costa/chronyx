@@ -18,10 +18,11 @@ export class WithRecurrence extends Scheduler {
       repr,
       handler,
       "IntervalBased",
+      autoStart,
       undefined
     );
 
-    if (autoStart) t.resume();
+    this.applyAutoStartConfig(t);
     const i = setInterval(() => {
       if (t.ableToRun()) {
         handler();

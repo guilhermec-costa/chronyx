@@ -20,9 +20,10 @@ export class WithOneShot extends Scheduler {
       repr,
       handler,
       "ExpressionBased",
+      autoStart,
       parsedCron
     );
-    if (autoStart) t.resume();
+    this.applyAutoStartConfig(t);
     const i = setInterval(() => {
       if (Date.now() >= moment.getTime() && t.ableToRun()) {
         handler();
