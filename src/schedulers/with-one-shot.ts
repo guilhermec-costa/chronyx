@@ -1,3 +1,4 @@
+import { CronLogger } from "../logger/logger";
 import { Task } from "../task";
 import { TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
@@ -8,6 +9,7 @@ export class WithOneShot extends Scheduler {
     repr,
     options: { autoStart, debugTick, name = "unknown" },
   }: TaskArgs) {
+    CronLogger.debug(`Scheduling task using One Shot method: ${repr}`);
     const moment = new Date(repr);
     const isMomentValid = moment.getTime() >= Date.now();
     if (!isMomentValid) {
@@ -27,6 +29,7 @@ export class WithOneShot extends Scheduler {
     const i = setInterval(() => {
       if (Date.now() >= moment.getTime() && t.ableToRun()) {
         handler();
+        t.updateLastRun(new Date());
         clearInterval(i);
       }
     }, 1000);

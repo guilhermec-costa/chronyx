@@ -1,4 +1,4 @@
-import { CronLogger } from "../logger";
+import { CronLogger } from "../logger/logger";
 import { DebugTickerExecutor, Task } from "../task";
 import { TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
@@ -9,6 +9,7 @@ export class WithExpression extends Scheduler {
     repr,
     options: { autoStart, debugTick, name = "unknown" },
   }: TaskArgs): Task {
+    CronLogger.debug(`Scheduling task using Expression method: ${repr}`);
     const parsedCron = this.cronValidationProxy(repr as string);
     const t = this.taskManager.makeTask(
       name,
@@ -24,6 +25,7 @@ export class WithExpression extends Scheduler {
       const now = new Date();
       if (this.matchesCron(now, parsedCron) && t.ableToRun()) {
         handler();
+        t.updateLastRun(new Date());
       }
     }, 1000);
 
@@ -36,8 +38,6 @@ export class WithExpression extends Scheduler {
       mainExecutorId: i,
       debugTickerId: tickerId,
     });
-
-    CronLogger.debug("Task created");
     return t;
   }
 }

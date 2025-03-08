@@ -1,5 +1,5 @@
-import { CronLogger } from "./logger";
-import { ConfigOptions } from "./types";
+import { CronLogger } from "./logger/logger";
+import { ConfigOptions, CronLogLevel } from "./types";
 
 export class Configurator {
   private static instance: Configurator;
@@ -16,8 +16,11 @@ export class Configurator {
 
   public addConfig(opts: ConfigOptions) {
     this.configs = opts;
-    CronLogger.configure({
-      level: this.configs.logger?.level,
-    });
+    CronLogger.configure(
+      opts.logger || {
+        level: CronLogLevel.NONE,
+        transportersTypes: ["console"],
+      }
+    );
   }
 }

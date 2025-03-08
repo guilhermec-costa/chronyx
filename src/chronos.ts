@@ -1,5 +1,6 @@
 import { Configurator } from "./configurator";
 import { CronExpressions } from "./defined-expr";
+import { CronLogger } from "./logger/logger";
 import { PatternValidator } from "./pattern-validator";
 import { Scheduler } from "./schedulers/scheduler";
 import { WithExpression } from "./schedulers/with-expression";
@@ -24,6 +25,10 @@ export class Chronos {
     this.taskManager = TaskManager.singleton();
     this.patternValidator = PatternValidator.singleton();
     config && Configurator.singleton().addConfig(config);
+    CronLogger.info("Chronos initialized");
+    if (config) {
+      CronLogger.info("Configuration applied to Chronos instance");
+    }
   }
 
   public listTasks() {
@@ -37,7 +42,12 @@ export class Chronos {
     }
   }
 
+  public tasks() {
+    return this.taskManager.taskStorage;
+  }
+
   public previewNext(expr: string, n: number = 10) {
+    CronLogger.debug(`Generating ${n} future previews for expression: ${expr}`);
     let previews: Date[] = [];
     let nextPreview: Date = new Date();
     const parsedCron = Scheduler.cronValidationProxy(expr);
@@ -51,6 +61,7 @@ export class Chronos {
   }
 
   public previewPast(expr: string, n: number) {
+    CronLogger.debug(`Generating ${n} past previews for expression: ${expr}`);
     let previews: Date[] = [];
     let nextPreview: Date = new Date();
     const parsedCron = Scheduler.cronValidationProxy(expr);

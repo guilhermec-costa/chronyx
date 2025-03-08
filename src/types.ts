@@ -1,5 +1,5 @@
 import { CronExpressions } from "./defined-expr";
-import { LoggerOptions } from "./logger";
+import { LoggerOptions } from "./logger/logger";
 
 export type CronParts = {
   second?: string;
@@ -43,3 +43,11 @@ export type ConfigOptions = {
   logger?: LoggerOptions;
   initializationMethod?: "autoStartAll" | "!autoStartAll" | "respectMyConfig";
 };
+
+export enum CronLogLevel {
+  DEBUG = "debug",
+  INFO = "info",
+  WARN = "warn",
+  ERROR = "error",
+  NONE = "none",
+}

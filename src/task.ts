@@ -19,6 +19,7 @@ export class Task {
   private status: TaskStatus;
   public cronParts?: CronParts;
   public autoStart: boolean;
+  private lastRunAt?: Date;
 
   constructor(
     name: string,
@@ -50,7 +51,8 @@ Type: ${this.cronType}
 Status: ${this.status}
 Expression: ${this.expression}
 Handler: ${this.handler.toString()}
-AutoStart: ${this.autoStart}`
+AutoStart: ${this.autoStart}
+LastRun: ${this.lastRunAt}`
     );
   }
 
@@ -77,5 +79,9 @@ AutoStart: ${this.autoStart}`
 
   public getId() {
     return this.id;
+  }
+
+  public updateLastRun(date: Date) {
+    this.lastRunAt = date;
   }
 }

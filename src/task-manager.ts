@@ -1,4 +1,5 @@
 import { Configurator } from "./configurator";
+import { CronLogger } from "./logger/logger";
 import { Task } from "./task";
 import { CronParts, CronType } from "./types";
 
@@ -40,6 +41,7 @@ export class TaskManager {
   ): Task {
     const t = new Task(name, repr, handler, type, parts, autoStart);
     this.taskStorage.push(t);
+    CronLogger.debug(`Task "${t.getId()}" created`);
     return t;
   }
 
@@ -66,5 +68,7 @@ export class TaskManager {
       clearInterval(tConfig.debugTickerId);
     }
     this.executorStorage.delete(tId);
+
+    CronLogger.debug(`Task "${tId}" killed`);
   }
 }

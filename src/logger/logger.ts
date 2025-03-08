@@ -1,30 +1,34 @@
-export enum CronLogLevel {
-  DEBUG = "debug",
-  INFO = "info",
-  WARN = "warn",
-  ERROR = "error",
-  NONE = "none",
-}
+import { CronLogLevel } from "../types";
+import { CronLogTransport, LogTransport } from "./log-transporters";
 
 export interface LoggerOptions {
-  level?: CronLogLevel;
+  level: CronLogLevel;
+  transporters: Array<LogTransport>;
 }
 
 export class CronLogger {
   private static level: CronLogLevel;
+  private static logTransporters: Array<LogTransport>;
 
-  public static configure({ level = CronLogLevel.INFO }: LoggerOptions) {
+  public static configure({
+    level = CronLogLevel.INFO,
+    transporters,
+  }: LoggerOptions) {
     this.level = level;
+    this.logTransporters =
+      transporters || new CronLogTransport.ConsoleTransport();
   }
 
   public static log(level: CronLogLevel, msg: string) {
     if (this.shouldLog(level)) {
       const output = `[${new Date().toISOString()}] [${level.toUpperCase()}] ${msg}`;
-      console.log(output);
+      for (const transport of this.logTransporters) {
+        transport.log(output);
+      }
     }
   }
 
-  public static shouldLog(level: CronLogLevel) {
+  private static shouldLog(level: CronLogLevel) {
     const levels = Object.values(CronLogLevel);
     return levels.indexOf(level) >= levels.indexOf(this.level);
   }
