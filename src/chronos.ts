@@ -82,7 +82,8 @@ export class Chronos {
     expr: number | string,
     handler: VoidFunction,
     name: string = "unknown",
-    debugTick: VoidFunction
+    debugTick: VoidFunction,
+    autoStart: boolean = true
   ): Task {
     switch (typeof expr) {
       case "string": {
@@ -91,6 +92,7 @@ export class Chronos {
           name: name,
           repr: expr.toString(),
           debugTick,
+          autoStart,
         });
       }
 
@@ -100,6 +102,7 @@ export class Chronos {
           name: name || "unknown",
           repr: expr.toString(),
           debugTick,
+          autoStart,
         });
       }
     }
@@ -109,13 +112,15 @@ export class Chronos {
     freq: number | ExecFrequency,
     handler: VoidFunction,
     name: string = "unknown",
-    debugTick: VoidFunction
+    debugTick: VoidFunction,
+    autoStart: boolean
   ): Task {
     return WithRecurrence.schedule({
       handler,
       name: name,
       repr: freq.toString(),
       debugTick,
+      autoStart,
     });
   }
 
@@ -123,13 +128,15 @@ export class Chronos {
     moment: Date,
     handler: VoidFunction,
     name: string = "unknown",
-    debugTick: VoidFunction
+    debugTick: VoidFunction,
+    autoStart: boolean
   ): Task {
     return WithOneShot.schedule({
       handler,
       name: name,
       repr: moment.toString(),
       debugTick,
+      autoStart,
     });
   }
 

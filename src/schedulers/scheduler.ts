@@ -1,4 +1,5 @@
 import { PatternValidator } from "../pattern-validator";
+import { DebugTickerExecutor, Task } from "../task";
 import { TaskManager } from "../task-manager";
 import { CRON_LIMITS, CronParts } from "../types";
 
@@ -15,6 +16,15 @@ export abstract class Scheduler {
     }
 
     return parsedCron;
+  }
+
+  protected static debugTickerActivationProxy(t: Task, cb: VoidFunction) {
+    const tickerId = setInterval(() => {
+      if (t.ableToRun()) {
+        cb();
+      }
+    }, 1000);
+    t.setDebugTicker(new DebugTickerExecutor(tickerId, cb));
   }
 
   public static dateComponents(date: Date) {

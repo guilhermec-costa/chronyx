@@ -26,8 +26,9 @@ export class WithOneShot extends Scheduler {
       }
     }, 1000);
 
+    if (debugTick) this.debugTickerActivationProxy(t, debugTick);
     t.setExecutorId(i);
-    t.changeState("RUNNING");
+    t.resume();
     return t;
   }
 }

@@ -3,7 +3,7 @@ import { CronParts, CronType } from "./types";
 
 export type TaskStatus = "CREATED" | "RUNNING" | "KILLED" | "PAUSED";
 
-class DebugTickerExecutor {
+export class DebugTickerExecutor {
   constructor(
     public readonly executorId: number,
     public readonly cb: VoidFunction
@@ -39,10 +39,15 @@ export class Task {
     this.status = "CREATED";
     this.cronParts = cronParts;
     this.timeZone = timeZone;
+    this.debugTicker = debugerTicker;
   }
 
   public setExecutorId(id: number) {
     this.executorId = id;
+  }
+
+  public setDebugTicker(ticker: DebugTickerExecutor) {
+    this.debugTicker = ticker;
   }
 
   public prettyPrint() {
@@ -55,10 +60,8 @@ export class Task {
     );
   }
 
-  public changeState(s: TaskStatus) {
-    if (this.status != s) {
-      this.status = s;
-    }
+  public resume() {
+    this.status = "RUNNING";
   }
 
   public pause() {
@@ -72,6 +75,10 @@ export class Task {
   public stop() {
     if (this.executorId) {
       clearInterval(this.executorId);
+    }
+
+    if (this.debugTicker) {
+      clearInterval(this.debugTicker.executorId);
     }
 
     this.status = "KILLED";

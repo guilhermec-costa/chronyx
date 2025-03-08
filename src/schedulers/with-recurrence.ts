@@ -1,4 +1,4 @@
-import { Task } from "../task";
+import { DebugTickerExecutor, Task } from "../task";
 import { TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
 
@@ -18,20 +18,16 @@ export class WithRecurrence extends Scheduler {
       parsedCron,
       0
     );
+
     const i = setInterval(() => {
       if (t.ableToRun()) {
         handler();
       }
     }, timeout);
 
-    setTimeout(() => {
-      if (t.ableToRun()) {
-        debugTick();
-      }
-    }, 1000);
-
+    if (debugTick) this.debugTickerActivationProxy(t, debugTick);
     t.setExecutorId(i);
-    t.changeState("RUNNING");
+    t.resume();
     return t;
   }
 }

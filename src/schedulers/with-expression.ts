@@ -1,9 +1,15 @@
-import { Task } from "../task";
+import { DebugTickerExecutor, Task } from "../task";
 import { TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
 
 export class WithExpression extends Scheduler {
-  public static schedule({ handler, name, repr, debugTick }: TaskArgs): Task {
+  public static schedule({
+    handler,
+    name,
+    repr,
+    debugTick,
+    autoStart,
+  }: TaskArgs): Task {
     const parsedCron = this.cronValidationProxy(repr as string);
     const t = this.taskManager.makeTask(
       name,
@@ -20,8 +26,10 @@ export class WithExpression extends Scheduler {
         handler();
       }
     }, 1000);
+
+    if (debugTick) this.debugTickerActivationProxy(t, debugTick);
     t.setExecutorId(i);
-    t.changeState("RUNNING");
+    t.resume();
     return t;
   }
 }

@@ -9,12 +9,13 @@ const c = new Chronos();
 const t = c.schedule(
   CronExpressions.EVERY_SECOND,
   () => {
-    console.log("Alguma coisa de background");
+    console.log("Task 1");
   },
   "My General Task",
   () => {
-    console.log("Ticking");
-  }
+    console.log("Ticking Every Tick");
+  },
+  true
 );
 
 const prevNext = c.previewNext(CronExpressions.EVERY_5_MINUTES, 5);

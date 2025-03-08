@@ -27,4 +27,5 @@ export type TaskArgs = {
   repr: string;
   handler: () => void;
   debugTick: () => void;
+  autoStart: boolean;
 };
