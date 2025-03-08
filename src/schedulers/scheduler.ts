@@ -18,13 +18,13 @@ export abstract class Scheduler {
     return parsedCron;
   }
 
-  protected static debugTickerActivationProxy(t: Task, cb: VoidFunction) {
+  protected static debugTickerActivator(t: Task, cb: VoidFunction): number {
     const tickerId = setInterval(() => {
       if (t.ableToRun()) {
         cb();
       }
     }, 1000);
-    t.setDebugTicker(new DebugTickerExecutor(tickerId, cb));
+    return tickerId;
   }
 
   public static dateComponents(date: Date) {

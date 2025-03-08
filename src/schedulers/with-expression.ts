@@ -6,7 +6,7 @@ export class WithExpression extends Scheduler {
   public static schedule({
     handler,
     repr,
-    options: { autoStart, debugTick, name },
+    options: { autoStart, debugTick, name = "unknown" },
   }: TaskArgs): Task {
     const parsedCron = this.cronValidationProxy(repr as string);
     const t = this.taskManager.makeTask(
@@ -14,8 +14,7 @@ export class WithExpression extends Scheduler {
       repr,
       handler,
       "ExpressionBased",
-      parsedCron,
-      0
+      parsedCron
     );
 
     if (autoStart) t.resume();
@@ -26,8 +25,16 @@ export class WithExpression extends Scheduler {
       }
     }, 1000);
 
-    if (debugTick) this.debugTickerActivationProxy(t, debugTick);
-    t.setExecutorId(i);
+    let tickerId;
+    if (debugTick) {
+      tickerId = this.debugTickerActivator(t, debugTick);
+    }
+
+    this.taskManager.executorStorage.set(t.getId(), {
+      mainExecutorId: i,
+      debugTickerId: tickerId,
+    });
+
     return t;
   }
 }

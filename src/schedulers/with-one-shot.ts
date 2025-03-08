@@ -6,7 +6,7 @@ export class WithOneShot extends Scheduler {
   public static schedule({
     handler,
     repr,
-    options: { autoStart, debugTick, name },
+    options: { autoStart, debugTick, name = "unknown" },
   }: TaskArgs) {
     const moment = new Date(repr);
     const isMomentValid = moment.getTime() >= Date.now();
@@ -20,8 +20,7 @@ export class WithOneShot extends Scheduler {
       repr,
       handler,
       "ExpressionBased",
-      parsedCron,
-      0
+      parsedCron
     );
     if (autoStart) t.resume();
     const i = setInterval(() => {
@@ -31,8 +30,16 @@ export class WithOneShot extends Scheduler {
       }
     }, 1000);
 
-    if (debugTick) this.debugTickerActivationProxy(t, debugTick);
-    t.setExecutorId(i);
+    let tickerId;
+    if (debugTick) {
+      tickerId = this.debugTickerActivator(t, debugTick);
+    }
+
+    this.taskManager.executorStorage.set(t.getId(), {
+      mainExecutorId: i,
+      debugTickerId: tickerId,
+    });
+
     return t;
   }
 }

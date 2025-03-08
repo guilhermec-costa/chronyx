@@ -6,10 +6,9 @@ export class WithRecurrence extends Scheduler {
   static schedule({
     handler,
     repr,
-    options: { autoStart, debugTick, name = "unknown" },
+    options: { autoStart = true, debugTick, name = "unknown" },
   }: TaskArgs): Task {
     const timeout = Number(repr);
-    const parsedCron = this.cronValidationProxy(repr.toString());
     if (timeout < 0) {
       throw new Error("frequency interval must be greater than 0");
     }
@@ -19,8 +18,7 @@ export class WithRecurrence extends Scheduler {
       repr,
       handler,
       "IntervalBased",
-      parsedCron,
-      0
+      undefined
     );
 
     if (autoStart) t.resume();
@@ -30,8 +28,16 @@ export class WithRecurrence extends Scheduler {
       }
     }, timeout);
 
-    if (debugTick) this.debugTickerActivationProxy(t, debugTick);
-    t.setExecutorId(i);
+    let tickerId;
+    if (debugTick) {
+      tickerId = this.debugTickerActivator(t, debugTick);
+    }
+
+    this.taskManager.executorStorage.set(t.getId(), {
+      mainExecutorId: i,
+      debugTickerId: tickerId,
+    });
+
     return t;
   }
 }

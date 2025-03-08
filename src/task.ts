@@ -1,5 +1,6 @@
-import { Scheduler } from "./schedulers/scheduler";
+import { TaskManager } from "./task-manager";
 import { CronParts, CronType } from "./types";
+import { v4 as uuidv4, v4 } from "uuid";
 
 export type TaskStatus = "CREATED" | "RUNNING" | "KILLED" | "PAUSED";
 
@@ -10,51 +11,42 @@ export class DebugTickerExecutor {
   ) {}
 }
 export class Task {
-  private executorId: number | null;
+  private readonly id: string;
   public name: string;
   public repr: string;
   public handler: () => void;
   private cronType: CronType;
   private status: TaskStatus;
-  public cronParts: CronParts;
-  private debugTicker?: DebugTickerExecutor;
+  public cronParts?: CronParts;
 
   constructor(
     name: string,
     repr: string,
     handler: () => void,
     cronType: CronType,
-    cronParts: CronParts,
-    // timeZone: string = "UTC",
-    executorId?: number,
-    debugerTicker?: DebugTickerExecutor
+    cronParts?: CronParts
   ) {
-    if (executorId) this.executorId = executorId;
-    else this.executorId = 0;
+    this.id = uuidv4();
     this.name = name;
     this.repr = repr;
     this.handler = handler;
     this.cronType = cronType;
     this.status = "CREATED";
     this.cronParts = cronParts;
-    this.debugTicker = debugerTicker;
-  }
-
-  public setExecutorId(id: number) {
-    this.executorId = id;
-  }
-
-  public setDebugTicker(ticker: DebugTickerExecutor) {
-    this.debugTicker = ticker;
   }
 
   public prettyPrint() {
     console.log(
-      `Name: ${this.name}\nType:${
-        this.cronType
-      }\nHandler:${this.handler.toString()}\nExecutorId:${
-        this.executorId
-      }\nStatus:${this.status}`
+      `
+---------------------
+Task Details:
+---------------------
+ID: ${this.id}
+Name: ${this.name}
+Type: ${this.cronType}
+Status: ${this.status}
+Expression: ${this.repr}
+Handler: ${this.handler.toString()}`
     );
   }
 
@@ -75,15 +67,11 @@ export class Task {
   }
 
   public stop() {
-    if (this.executorId) {
-      clearInterval(this.executorId);
-    }
-
-    if (this.debugTicker) {
-      clearInterval(this.debugTicker.executorId);
-    }
-
+    TaskManager.singleton().stopTask(this.getId());
     this.status = "KILLED";
-    this.executorId = null;
+  }
+
+  public getId() {
+    return this.id;
   }
 }
