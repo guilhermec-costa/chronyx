@@ -16,6 +16,7 @@ import {
 } from "./types";
 import { addSeconds, subSeconds } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import { validateTimezone } from "./utils";
 
 /**
  * Main class to manage scheduling tasks using cron-like expressions.
@@ -65,7 +66,7 @@ export class Chronos {
    */
   public listTasks() {
     if (this.taskManager.taskStorage.length === 0) {
-      console.log("Task Storage is empty");
+      this.logger.debug("Task Storage is empty");
       return;
     }
 
@@ -146,6 +147,7 @@ export class Chronos {
     handler: VoidFunction,
     options?: SchedulingOptions
   ): Task {
+    if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
     switch (typeof expr) {
       case "string": {
         return this.withExpressionScheduler.schedule({
@@ -165,6 +167,12 @@ export class Chronos {
     }
   }
 
+  private validateSchedulingTimezone(tz: string) {
+    if (!validateTimezone(tz)) {
+      throw new Error(`"${tz}" is not a valid timezone`);
+    }
+  }
+
   public makeCron({ expr, handler, options }: SchedulingConstructor) {
     this.schedule(expr, handler, options);
   }
@@ -181,6 +189,7 @@ export class Chronos {
     handler: VoidFunction,
     options: SchedulingOptions
   ): Task {
+    if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
     return this.withRecurrenceScheduler.schedule({
       handler,
       repr: freq.toString(),
@@ -200,6 +209,7 @@ export class Chronos {
     handler: VoidFunction,
     options: SchedulingOptions
   ): Task {
+    if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
     return this.withOneShotScheduler.schedule({
       handler,
       repr: moment.toString(),

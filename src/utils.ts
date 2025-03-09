@@ -21,3 +21,12 @@ export function dateComponents(date: Date) {
 export function getTzNow(tz: string) {
   return toZonedTime(new Date(), tz);
 }
+
+export function validateTimezone(tz: string) {
+  try {
+    const n = new Intl.DateTimeFormat("en-US", { timeZone: tz });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}

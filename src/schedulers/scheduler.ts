@@ -3,8 +3,6 @@ import { CronLogger } from "../logger/logger";
 import { PatternValidator } from "../pattern-validator";
 import { Task } from "../task";
 import { TaskManager } from "../task-manager";
-import { CRON_LIMITS, CronParts } from "../types";
-import { dateComponents } from "../utils";
 
 export abstract class Scheduler {
   protected readonly logger: CronLogger;
@@ -37,45 +35,5 @@ export abstract class Scheduler {
       }
     }, 1000);
     return tickerId;
-  }
-
-  public matchesCron(moment: Date, cron: CronParts) {
-    const { dayOfMonth, dayOfWeek, hour, minute, month, second } =
-      dateComponents(moment);
-
-    return (
-      (cron.second
-        ? this.patternValidator
-            .expandField(
-              cron.second,
-              CRON_LIMITS.second[0],
-              CRON_LIMITS.second[1]
-            )
-            .includes(second)
-        : true) &&
-      this.patternValidator
-        .expandField(cron.minute, CRON_LIMITS.minute[0], CRON_LIMITS.minute[1])
-        .includes(minute) &&
-      this.patternValidator
-        .expandField(cron.hour, CRON_LIMITS.hour[0], CRON_LIMITS.hour[1])
-        .includes(hour) &&
-      this.patternValidator
-        .expandField(
-          cron.dayOfMonth,
-          CRON_LIMITS.dayOfMonth[0],
-          CRON_LIMITS.dayOfMonth[1]
-        )
-        .includes(dayOfMonth) &&
-      this.patternValidator
-        .expandField(cron.month, CRON_LIMITS.month[0], CRON_LIMITS.month[1])
-        .includes(month) &&
-      this.patternValidator
-        .expandField(
-          cron.dayOfWeek,
-          CRON_LIMITS.dayOfWeek[0],
-          CRON_LIMITS.dayOfWeek[1]
-        )
-        .includes(dayOfWeek)
-    );
   }
 }

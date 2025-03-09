@@ -26,7 +26,7 @@ export class WithExpression extends Scheduler {
     this.applyAutoStartConfig(t);
     const i = setInterval(() => {
       const now = getTzNow(t.tz);
-      if (this.matchesCron(now, parsedCron) && t.ableToRun()) {
+      if (this.patternValidator.matchesCron(now, parsedCron) && t.ableToRun()) {
         handler();
         t.updateLastRun(now);
       }

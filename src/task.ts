@@ -19,16 +19,16 @@ export class DebugTickerExecutor {
 }
 export class Task {
   private readonly id: string;
-  public name: string;
-  public expression: string;
+  public readonly name: string;
+  public readonly expression: string;
   public handler: () => void;
-  private cronType: CronType;
+  private readonly cronType: CronType;
   private status: TaskStatus;
-  public cronParts?: CronParts;
-  public autoStart: boolean;
+  public readonly cronParts?: CronParts;
+  public readonly autoStart: boolean;
   private lastRunAt?: Date;
-  private emitter: EventEmitter;
-  public tz: string;
+  private readonly emitter: EventEmitter;
+  public readonly tz: string;
 
   /**
    * Creates a new scheduled task instance.
