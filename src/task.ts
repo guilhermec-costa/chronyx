@@ -28,6 +28,7 @@ export class Task {
   public autoStart: boolean;
   private lastRunAt?: Date;
   private emitter: EventEmitter;
+  public tz: string;
 
   /**
    * Creates a new scheduled task instance.
@@ -47,7 +48,8 @@ export class Task {
     cronType: CronType,
     emitter: EventEmitter,
     cronParts?: CronParts,
-    autoStart: boolean = true
+    autoStart: boolean = true,
+    timezone: string = "utc"
   ) {
     this.id = uuidv4();
     this.name = name;
@@ -58,6 +60,7 @@ export class Task {
     this.cronParts = cronParts;
     this.autoStart = autoStart;
     this.emitter = emitter;
+    this.tz = timezone;
   }
 
   /**

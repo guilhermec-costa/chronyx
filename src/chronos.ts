@@ -15,6 +15,7 @@ import {
   SchedulingOptions,
 } from "./types";
 import { addSeconds, subSeconds } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
 /**
  * Main class to manage scheduling tasks using cron-like expressions.
@@ -103,12 +104,12 @@ export class Chronos {
    * @param n Number of future times to generate (default: 10).
    * @returns Array of future execution dates.
    */
-  public previewNext(expr: string, n: number = 10) {
+  public previewNext(expr: string, n: number = 10, tz?: string) {
     this.logger.debug(
-      `Generating ${n} future previews for expression: ${expr}`
+      `Generating ${n} future previews for expression: ${expr}, timezone ${tz}`
     );
     let previews: Date[] = [];
-    let nextPreview: Date = new Date();
+    let nextPreview: Date = tz ? toZonedTime(new Date(), tz) : new Date();
     const parsedCron = this.cronValidationProxy(expr);
     while (previews.length < n) {
       nextPreview = addSeconds(nextPreview, 1);
@@ -119,16 +120,26 @@ export class Chronos {
     return previews;
   }
 
+  public previewNextTaskExecution(t: Task, n: number) {
+    return this.previewNext(t.expression, n, t.tz);
+  }
+
+  public previewPastTaskExecution(t: Task, n: number) {
+    return this.previewPast(t.expression, n, t.tz);
+  }
+
   /**
    * Generates past execution times based on the cron expression.
    * @param expr The cron expression.
    * @param n Number of past times to generate.
    * @returns Array of past execution dates.
    */
-  public previewPast(expr: string, n: number) {
-    this.logger.debug(`Generating ${n} past previews for expression: ${expr}`);
+  public previewPast(expr: string, n: number, tz?: string) {
+    this.logger.debug(
+      `Generating ${n} past previews for expression: ${expr}, timezone ${tz}`
+    );
     let previews: Date[] = [];
-    let nextPreview: Date = new Date();
+    let nextPreview: Date = tz ? toZonedTime(new Date(), tz) : new Date();
     const parsedCron = this.cronValidationProxy(expr);
     while (previews.length < n) {
       nextPreview = subSeconds(nextPreview, 1);
@@ -222,14 +233,11 @@ export class Chronos {
       this.patternValidator.parseExpr(expr);
 
     return {
-      //@ts-ignore
-      second: second
-        ? this.patternValidator.expandField(
-            second,
-            CRON_LIMITS.second[0],
-            CRON_LIMITS.second[1]
-          )
-        : [],
+      second: this.patternValidator.expandField(
+        second,
+        CRON_LIMITS.second[0],
+        CRON_LIMITS.second[1]
+      ),
       dayOfWeek: this.patternValidator.expandField(
         dayOfWeek,
         CRON_LIMITS.dayOfWeek[0],

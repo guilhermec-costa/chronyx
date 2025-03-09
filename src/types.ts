@@ -2,7 +2,7 @@ import { CronExpressions } from "./defined-expr";
 import { LoggerOptions } from "./logger/logger";
 
 export type CronParts = {
-  second?: string;
+  second: string;
   minute: string;
   hour: string;
   dayOfMonth: string;
@@ -37,6 +37,7 @@ export type SchedulingOptions = {
   name?: string;
   debugTick?: VoidFunction;
   autoStart?: boolean;
+  timeZone?: string;
 };
 
 export type ConfigOptions = {

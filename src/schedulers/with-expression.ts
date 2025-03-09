@@ -1,12 +1,13 @@
 import { Task } from "../task";
 import { TaskArgs } from "../types";
+import { getTzNow } from "../utils";
 import { Scheduler } from "./scheduler";
 
 export class WithExpression extends Scheduler {
   public schedule({
     handler,
     repr,
-    options: { autoStart, debugTick, name = "unknown" },
+    options: { autoStart, debugTick, name = "unknown", timeZone = "utc" },
   }: TaskArgs): Task {
     this.logger.debug(`Scheduling task using Expression method: ${repr}`);
     const parsedCron = this.cronValidationProxy(repr as string);
@@ -16,15 +17,16 @@ export class WithExpression extends Scheduler {
       handler,
       "ExpressionBased",
       autoStart,
-      parsedCron
+      parsedCron,
+      timeZone
     );
 
     this.applyAutoStartConfig(t);
     const i = setInterval(() => {
-      const now = new Date();
+      const now = getTzNow(t.tz);
       if (this.matchesCron(now, parsedCron) && t.ableToRun()) {
         handler();
-        t.updateLastRun(new Date());
+        t.updateLastRun(now);
       }
     }, 1000);
 

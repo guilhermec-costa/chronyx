@@ -1,3 +1,5 @@
+import { toZonedTime } from "date-fns-tz";
+
 export function dateComponents(date: Date) {
   const second = date.getSeconds();
   const minute = date.getMinutes();
@@ -14,4 +16,8 @@ export function dateComponents(date: Date) {
     month,
     dayOfWeek,
   };
+}
+
+export function getTzNow(tz: string) {
+  return toZonedTime(new Date(), tz);
 }

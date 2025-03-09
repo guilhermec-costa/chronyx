@@ -13,6 +13,9 @@ export type TaskExecutionContainer = Map<
 >;
 
 export class TaskManager {
+  /**
+   * A storage for task execution configuration, including intervals.
+   */
   public taskStorage: Array<Task>;
   public executorStorage: TaskExecutionContainer;
   private readonly configurator: Configurator;
@@ -37,7 +40,8 @@ export class TaskManager {
     handler: () => void,
     type: CronType,
     autoStart?: boolean,
-    parts?: CronParts
+    parts?: CronParts,
+    timezone: string = "utc"
   ): Task {
     const t = new Task(
       name,
@@ -46,7 +50,8 @@ export class TaskManager {
       type,
       this.eventEmitter,
       parts,
-      autoStart
+      autoStart,
+      timezone
     );
     this.taskStorage.push(t);
     this.logger.debug(`Task "${t.getId()}" created`);

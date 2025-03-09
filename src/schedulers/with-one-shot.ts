@@ -1,13 +1,14 @@
 import { CronLogger } from "../logger/logger";
 import { Task } from "../task";
 import { TaskArgs } from "../types";
+import { getTzNow } from "../utils";
 import { Scheduler } from "./scheduler";
 
 export class WithOneShot extends Scheduler {
   public schedule({
     handler,
     repr,
-    options: { autoStart, debugTick, name = "unknown" },
+    options: { autoStart, debugTick, name = "unknown", timeZone = "utc" },
   }: TaskArgs) {
     this.logger.debug(`Scheduling task using One Shot method: ${repr}`);
     const moment = new Date(repr);
@@ -23,10 +24,12 @@ export class WithOneShot extends Scheduler {
       handler,
       "ExpressionBased",
       autoStart,
-      parsedCron
+      parsedCron,
+      timeZone
     );
     this.applyAutoStartConfig(t);
     const i = setInterval(() => {
+      const now = getTzNow(t.tz);
       if (Date.now() >= moment.getTime() && t.ableToRun()) {
         handler();
         t.updateLastRun(new Date());

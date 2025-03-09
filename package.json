@@ -23,6 +23,7 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
+    "date-fns-tz": "^3.2.0",
     "tsx": "^4.19.3",
     "uuid": "^11.1.0"
   }

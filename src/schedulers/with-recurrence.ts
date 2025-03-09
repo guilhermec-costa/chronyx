@@ -1,13 +1,19 @@
 import { CronLogger } from "../logger/logger";
 import { DebugTickerExecutor, Task } from "../task";
 import { TaskArgs } from "../types";
+import { getTzNow } from "../utils";
 import { Scheduler } from "./scheduler";
 
 export class WithRecurrence extends Scheduler {
   public schedule({
     handler,
     repr,
-    options: { autoStart = true, debugTick, name = "unknown" },
+    options: {
+      autoStart = true,
+      debugTick,
+      name = "unknown",
+      timeZone = "utc",
+    },
   }: TaskArgs): Task {
     this.logger.debug(`Scheduling task using Recurrence method: ${repr}`);
     const timeout = Number(repr);
@@ -21,14 +27,15 @@ export class WithRecurrence extends Scheduler {
       handler,
       "IntervalBased",
       autoStart,
-      undefined
+      undefined,
+      timeZone
     );
 
     this.applyAutoStartConfig(t);
     const i = setInterval(() => {
       if (t.ableToRun()) {
         handler();
-        t.updateLastRun(new Date());
+        t.updateLastRun(getTzNow(t.tz));
       }
     }, timeout);
 
