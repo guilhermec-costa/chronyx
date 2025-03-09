@@ -162,4 +162,14 @@ export class PatternValidator {
       ).includes(dayOfWeek)
     );
   }
+
+  public getCronPartsIfValid(expr: string): CronParts {
+    const parsedCron = this.parseExpr(expr);
+    const validCron = this.validateCron(parsedCron);
+    if (!validCron) {
+      throw new Error(`Expression "${expr}" is not a valid cron expression`);
+    }
+
+    return parsedCron;
+  }
 }

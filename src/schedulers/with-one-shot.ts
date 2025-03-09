@@ -17,7 +17,9 @@ export class WithOneShot extends Scheduler {
       throw new Error("Target date should be greater/equal to current date");
     }
 
-    const parsedCron = this.cronValidationProxy(repr as string);
+    const parsedCron = this.patternValidator.getCronPartsIfValid(
+      repr as string
+    );
     const t = this.taskManager.makeTask(
       name,
       repr,

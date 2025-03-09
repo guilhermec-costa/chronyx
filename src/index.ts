@@ -29,7 +29,7 @@ const c = new Chronos({
   initializationMethod: "autoStartAll",
 });
 
-c.schedule("* * 3 * * *", () => {
+c.schedule("* * 25 * * *", () => {
   console.log("Testing cron 1");
 });
 
@@ -43,15 +43,9 @@ c.schedule(
   }
 );
 
-const t = c.schedule(
-  "0 0 3 * * *",
-  () => {
-    console.log("Testing cron 2");
-  },
-  {
-    timeZone: "America/Sao_Paulo",
-  }
-);
+const t = c.schedule("0 0 3 * * *", () => {
+  console.log("Testing cron 2");
+});
 
 console.log(c.previewNextTaskExecution(t, 5));
 console.log(c.previewPastTaskExecution(t, 5));

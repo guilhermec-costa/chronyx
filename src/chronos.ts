@@ -83,22 +83,6 @@ export class Chronos {
   }
 
   /**
-   * Validates and parses a cron expression.
-   * @param expr The cron expression to validate.
-   * @returns Parsed CronParts if valid.
-   * @throws Error if the expression is invalid.
-   */
-  public cronValidationProxy(expr: string): CronParts {
-    const parsedCron = this.patternValidator.parseExpr(expr);
-    const validCron = this.patternValidator.validateCron(parsedCron);
-    if (!validCron) {
-      throw new Error("Expression is not valid");
-    }
-
-    return parsedCron;
-  }
-
-  /**
    * Generates future execution times based on the cron expression.
    * @param expr The cron expression.
    * @param n Number of future times to generate (default: 10).
@@ -110,7 +94,7 @@ export class Chronos {
     );
     let previews: Date[] = [];
     let nextPreview: Date = tz ? toZonedTime(new Date(), tz) : new Date();
-    const parsedCron = this.cronValidationProxy(expr);
+    const parsedCron = this.patternValidator.getCronPartsIfValid(expr);
     while (previews.length < n) {
       nextPreview = addSeconds(nextPreview, 1);
       if (this.matchesCron(nextPreview, parsedCron)) {
@@ -140,7 +124,7 @@ export class Chronos {
     );
     let previews: Date[] = [];
     let nextPreview: Date = tz ? toZonedTime(new Date(), tz) : new Date();
-    const parsedCron = this.cronValidationProxy(expr);
+    const parsedCron = this.patternValidator.getCronPartsIfValid(expr);
     while (previews.length < n) {
       nextPreview = subSeconds(nextPreview, 1);
       if (this.matchesCron(nextPreview, parsedCron)) {

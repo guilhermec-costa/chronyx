@@ -5,7 +5,6 @@ import { Task } from "../task";
 import { TaskManager } from "../task-manager";
 import { CRON_LIMITS, CronParts } from "../types";
 import { dateComponents } from "../utils";
-import { toZonedTime } from "date-fns-tz";
 
 export abstract class Scheduler {
   protected readonly logger: CronLogger;
@@ -15,16 +14,6 @@ export abstract class Scheduler {
     protected readonly patternValidator: PatternValidator
   ) {
     this.logger = this.configurator.logger;
-  }
-
-  public cronValidationProxy(expr: string): CronParts {
-    const parsedCron = this.patternValidator.parseExpr(expr);
-    const validCron = this.patternValidator.validateCron(parsedCron);
-    if (!validCron) {
-      throw new Error("Expression is not valid");
-    }
-
-    return parsedCron;
   }
 
   public applyAutoStartConfig(t: Task) {
