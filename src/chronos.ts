@@ -173,8 +173,8 @@ export class Chronos {
     }
   }
 
-  public makeCron({ expr, handler, options }: SchedulingConstructor) {
-    this.schedule(expr, handler, options);
+  public makeCron({ expr, handler, options }: SchedulingConstructor): Task {
+    return this.schedule(expr, handler, options);
   }
 
   /**
@@ -218,8 +218,12 @@ export class Chronos {
   }
 
   public validateCron(expr: string) {
-    const parts = this.patternValidator.parseExpr(expr);
-    return this.patternValidator.validateCron(parts);
+    try {
+      const parts = this.patternValidator.parseExpr(expr);
+      return this.patternValidator.validateCron(parts);
+    } catch (error) {
+      return false;
+    }
   }
 
   public expandedValues(expr: string) {
