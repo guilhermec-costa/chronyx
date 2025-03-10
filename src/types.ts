@@ -52,3 +52,8 @@ export enum CronLogLevel {
   ERROR = "error",
   NONE = "none",
 }
+
+export type CronValidationResult = {
+  valid: boolean;
+  error?: string;
+};

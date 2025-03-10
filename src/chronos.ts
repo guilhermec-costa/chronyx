@@ -11,6 +11,7 @@ import {
   ConfigOptions,
   CRON_LIMITS,
   CronParts,
+  CronValidationResult,
   SchedulingConstructor,
   SchedulingOptions,
 } from "./types";
@@ -217,10 +218,11 @@ export class Chronos {
     });
   }
 
-  public validateCron(expr: string) {
+  public validateCron(expr: string): boolean {
     try {
       const parts = this.patternValidator.parseExpr(expr);
-      return this.patternValidator.validateCron(parts);
+      const isValid = this.patternValidator.validateCron(parts);
+      return isValid;
     } catch (error) {
       return false;
     }

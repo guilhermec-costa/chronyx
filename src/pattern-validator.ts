@@ -87,13 +87,11 @@ export class PatternValidator {
    */
   public validateCron(cron: CronParts) {
     return (
-      (cron.second
-        ? this.validateField(
-            cron.second,
-            CRON_LIMITS.second[0],
-            CRON_LIMITS.second[1]
-          )
-        : true) &&
+      this.validateField(
+        cron.second,
+        CRON_LIMITS.second[0],
+        CRON_LIMITS.second[1]
+      ) &&
       this.validateField(
         cron.minute,
         CRON_LIMITS.minute[0],
