@@ -1,8 +1,8 @@
-# Chronos Scheduler Documentation
+# Chronyx
 
 ## Introduction
 
-The `Chronos` class is a flexible and extensible task scheduler that supports:
+`Chronyx` is a flexible and extensible task scheduler that supports:
 
 - Cron-like scheduling using expressions.
 - One-time tasks ("one-shot" executions).
@@ -29,10 +29,10 @@ export const DefaultSchedulingOptions: SchedulingOptions = {
 
 ### ConfigOptions
 
-| Property             | Type                   | Description                                |
-| -------------------- | ---------------------- | ------------------------------------------ |
-| initializationMethod | "autoStartAll" or null | Defines whether tasks start automatically  |
-| logger               | LoggerOptions          | Customizes log levels and log destinations |
+| Property             | Type                                         | Description                                |
+| -------------------- | -------------------------------------------- | ------------------------------------------ |
+| initializationMethod | "autoStartAll-!autoStartall-respectMyConfig" | Defines whether tasks start automatically  |
+| logger               | LoggerOptions                                | Customizes log levels and log destinations |
 
 ### LoggerOptions
 
@@ -46,15 +46,25 @@ export const DefaultSchedulingOptions: SchedulingOptions = {
 You can initialize Chronos with the default configuration or provide custom options:
 
 ```typescript
-const c1 = new Chronos(); // Default configuration
+const c1 = new Chronos();
+/* Assumes the default configuration
+{
+  initializationMethod: "autoStartAll",
+  logger: {
+    level: CronLogLevel.INFO,
+    transporters: [new CronLogTransport.ConsoleTransport()],
+  },
+};
+*/
 
+// Custom cron manager
 const c2 = new Chronos({
   initializationMethod: "autoStartAll",
   logger: {
     level: CronLogLevel.DEBUG,
     transporters: [
       new CronLogTransport.ConsoleTransport(),
-      new CronLogTransport.FilesystemTransport({ filepath: "cron-logs" }),
+      new CronLogTransport.FilesystemTransport({ filepath: "cron-logs" }), // logs to the filesystem specified path
     ],
   },
 });
@@ -126,9 +136,34 @@ c1.makeCron({
 });
 ```
 
+---
+
+### **Important**:
+
+Every scheduling performed (scheduler, execEvery, oneShot or makeCron methods) returns a task object, which can be used for all task introspection operations
+
 ## Introspection Methods
 
-### List All Tasks
+### Task operations
+
+```typescript
+const task = chronos.schedule(
+  CronExpressions.EVERY_5_MINUTES,
+  () => {
+    console.log("every second");
+  },
+  {
+    autoStart: false,
+  }
+);
+
+task.resume();
+task.pause();
+task.stop();
+task.prettyPrint();
+```
+
+### Pretty print the list of tasks
 
 ```typescript
 c1.listTasks(); // Logs all registered tasks to the console
@@ -215,4 +250,4 @@ c1.schedule(
 
 ## Summary
 
-Chronos provides a powerful and flexible API for managing scheduled tasks using cron expressions, one-shot executions, and recurring intervals. With support for logging, introspection, and advanced options like timezones and debugging, it is a robust solution for task scheduling needs.
+Chronyx provides a powerful and flexible API for managing scheduled tasks using cron expressions, one-shot executions, and recurring intervals. With support for logging, introspection, and advanced options like timezones and debugging, it is a robust solution for task scheduling needs.
