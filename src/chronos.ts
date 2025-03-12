@@ -10,6 +10,7 @@ import { TaskManager } from "./task-manager";
 import {
   ConfigOptions,
   CRON_LIMITS,
+  CronLogLevel,
   CronParts,
   CronValidationResult,
   SchedulingConstructor,
@@ -18,7 +19,19 @@ import {
 import { addSeconds, subSeconds } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { validateTimezone } from "./utils";
+import { CronLogTransport } from "./logger/log-transporters";
 
+export const DefaultChronosConfig: ConfigOptions = {
+  initializationMethod: "autoStartAll",
+  logger: {
+    level: CronLogLevel.INFO,
+    transporters: [new CronLogTransport.ConsoleTransport()],
+  },
+};
+
+export const DefaultSchedulingOptions: SchedulingOptions = {
+  autoStart: true,
+};
 /**
  * Main class to manage scheduling tasks using cron-like expressions.
  */
@@ -36,7 +49,7 @@ export class Chronos {
    * @param config Optional configuration object for the scheduler.
    */
   constructor(config?: ConfigOptions) {
-    this.configurator = new Configurator(config || {});
+    this.configurator = new Configurator(config || DefaultChronosConfig);
     this.taskManager = new TaskManager(this.configurator);
     this.patternValidator = new PatternValidator();
     this.logger = this.configurator.logger;
@@ -154,7 +167,7 @@ export class Chronos {
         return this.withExpressionScheduler.schedule({
           handler,
           repr: expr.toString(),
-          options: options || {},
+          options: options || DefaultSchedulingOptions,
         });
       }
 
@@ -162,7 +175,7 @@ export class Chronos {
         return this.withRecurrenceScheduler.schedule({
           handler,
           repr: expr.toString(),
-          options: options || {},
+          options: options || DefaultSchedulingOptions,
         });
       }
     }
@@ -188,13 +201,13 @@ export class Chronos {
   public execEvery(
     freq: number,
     handler: VoidFunction,
-    options: SchedulingOptions
+    options?: SchedulingOptions
   ): Task {
     if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
     return this.withRecurrenceScheduler.schedule({
       handler,
       repr: freq.toString(),
-      options,
+      options: options || DefaultSchedulingOptions,
     });
   }
 
@@ -208,13 +221,13 @@ export class Chronos {
   public oneShot(
     moment: Date,
     handler: VoidFunction,
-    options: SchedulingOptions
+    options?: SchedulingOptions
   ): Task {
     if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
     return this.withOneShotScheduler.schedule({
       handler,
       repr: moment.toString(),
-      options,
+      options: options || DefaultSchedulingOptions,
     });
   }
 

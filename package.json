@@ -1,5 +1,5 @@
 {
-  "name": "@guilhermec-costa/chronify",
+  "name": "chronyx",
   "version": "0.0.1",
   "description": "Chron Job package",
   "main": "./dist/index.js",
