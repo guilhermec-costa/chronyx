@@ -112,7 +112,7 @@ export class Chronos {
     const parsedCron = this.patternValidator.getCronPartsIfValid(expr);
     while (previews.length < n) {
       nextPreview = addSeconds(nextPreview, 1);
-      if (this.matchesCron(nextPreview, parsedCron)) {
+      if (this._matchesCron(nextPreview, parsedCron)) {
         previews.push(nextPreview);
       }
     }
@@ -142,7 +142,7 @@ export class Chronos {
     const parsedCron = this.patternValidator.getCronPartsIfValid(expr);
     while (previews.length < n) {
       nextPreview = subSeconds(nextPreview, 1);
-      if (this.matchesCron(nextPreview, parsedCron)) {
+      if (this._matchesCron(nextPreview, parsedCron)) {
         previews.push(nextPreview);
       }
     }
@@ -285,7 +285,12 @@ export class Chronos {
    * @param cron Cron pattern to match against.
    * @returns True if the date matches the cron pattern.
    */
-  public matchesCron(moment: Date, cron: CronParts) {
+  private _matchesCron(moment: Date, cron: CronParts) {
     return this.patternValidator.matchesCron(moment, cron);
+  }
+
+  public matchesCron(moment: Date, expr: string) {
+    const parsedCron = this.patternValidator.getCronPartsIfValid(expr);
+    return this.patternValidator.matchesCron(moment, parsedCron);
   }
 }

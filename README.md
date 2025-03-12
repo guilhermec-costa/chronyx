@@ -1,160 +1,218 @@
-# Chronyx
+# Chronos Scheduler Documentation
 
-Chronyx is a flexible and efficient task scheduling library for Node.js, supporting cron-like expressions, fixed intervals, and one-time executions.
+## Introduction
 
-## Features
+The `Chronos` class is a flexible and extensible task scheduler that supports:
 
-- **Cron Expression Scheduling**: Schedule tasks using standard cron expressions.
-- **Fixed Interval Execution**: Run tasks repeatedly at a specified time interval.
-- **One-Time Execution**: Schedule tasks to run once at a specific time.
-- **Task Management**: List, stop, and manage scheduled tasks.
-- **Timezone Support**: Schedule tasks using specific time zones.
-- **Task Previews**: Preview future and past execution times.
+- Cron-like scheduling using expressions.
+- One-time tasks ("one-shot" executions).
+- Recurring tasks at fixed intervals.
+- Task introspection (listing and previewing future/past executions).
 
-## Installation
+## Configuration
 
-```bash
-pnpm install chronyx
-```
-
-## Usage
-
-### Basic Example
+You can configure the Chronos scheduler using the `ConfigOptions` object. Here are the available configuration options:
 
 ```typescript
-import { Chronos } from "chronyx";
+export const DefaultChronosConfig: ConfigOptions = {
+  initializationMethod: "autoStartAll", // Automatically starts all scheduled tasks
+  logger: {
+    level: CronLogLevel.INFO, // Log level (INFO, DEBUG, ERROR)
+    transporters: [new CronLogTransport.ConsoleTransport()], // Outputs logs to the console
+  },
+};
 
-export const scheduler = new Chronos({
+export const DefaultSchedulingOptions: SchedulingOptions = {
+  autoStart: true, // Automatically start tasks by default
+};
+```
+
+### ConfigOptions
+
+| Property             | Type                   | Description                                |
+| -------------------- | ---------------------- | ------------------------------------------ |
+| initializationMethod | "autoStartAll" or null | Defines whether tasks start automatically  |
+| logger               | LoggerOptions          | Customizes log levels and log destinations |
+
+### LoggerOptions
+
+| Property     | Type               | Description                               |
+| ------------ | ------------------ | ----------------------------------------- |
+| level        | CronLogLevel       | Log level (INFO, DEBUG, ERROR)            |
+| transporters | CronLogTransport[] | Array of log transporters (console, file) |
+
+## Creating a Chronos Instance
+
+You can initialize Chronos with the default configuration or provide custom options:
+
+```typescript
+const c1 = new Chronos(); // Default configuration
+
+const c2 = new Chronos({
   initializationMethod: "autoStartAll",
   logger: {
-    level: CronLogLevel.INFO,
-    transporters: [new CronLogTransport.ConsoleTransport()],
-  },
-});
-
-// Schedule a task using a cron expression
-scheduler.schedule("*/5 * * * *", () => {
-  console.log("Task executed every 5 minutes");
-});
-
-// Schedule a task using a pre defined enum option cron expression
-scheduler.schedule(CronExpressions.EVERY_5_SECONDS, () => {
-  console.log("Task executed every 5 minutes");
-});
-
-// Schedule a task to run every 10 seconds
-scheduler.execEvery(10, () => {
-  console.log("Task executed every 10 seconds");
-});
-
-// Schedule a one-time task
-scheduler.oneShot(new Date(Date.now() + 60000), () => {
-  console.log("Task executed after 1 minute");
-});
-
-scheduler.makeCron({
-  expr: CronExpressions.EVERY_5_SECONDS,
-  handler: () => {
-    console.log("Testing make cron method");
+    level: CronLogLevel.DEBUG,
+    transporters: [
+      new CronLogTransport.ConsoleTransport(),
+      new CronLogTransport.FilesystemTransport({ filepath: "cron-logs" }),
+    ],
   },
 });
 ```
 
-## API
+## Scheduling Tasks
 
-### `new Chronos(config?: ConfigOptions)`
+### Recurring Tasks (Fixed Interval)
 
-Creates a new Chronos scheduler instance.
-
-- `config` _(optional)_: Configuration object for the scheduler.
-  If not specified, uses the default configuration
-
-### `schedule(expr: string | number, handler: VoidFunction, options?: SchedulingOptions): Task`
-
-Schedules a task.
-
-- `expr`: Cron expression (e.g., `"*/5 * * * *"`) or a number (in seconds for intervals).
-- `handler`: Function to execute.
-- `options`: Optional scheduling options (e.g., `timeZone`).
-
-### `execEvery(freq: number, handler: VoidFunction, options?: SchedulingOptions): Task`
-
-Schedules a task to run at a fixed frequency.
-
-- `freq`: Frequency in seconds.
-- `handler`: Function to execute.
-- `options`: Optional scheduling options.
-
-### `oneShot(moment: Date, handler: VoidFunction, options?: SchedulingOptions): Task`
-
-Schedules a one-time task.
-
-- `moment`: Date of execution.
-- `handler`: Function to execute.
-- `options`: Optional scheduling options.
-
-### `listTasks(): void`
-
-Prints all registered tasks to the console.
-
-### `tasks(): Task[]`
-
-Returns an array of all scheduled tasks.
-
-### `previewNext(expr: string, n?: number, tz?: string): Date[]`
-
-Generates future execution times based on a cron expression.
-
-- `expr`: Cron expression.
-- `n`: Number of future execution times (default: 10).
-- `tz`: Timezone (optional).
-
-### `validateCron(expr: string): boolean`
-
-Validates a cron expression.
-
-- `expr`: Cron expression to validate.
-
-### `matchesCron(moment: Date, cron: CronParts): boolean`
-
-Checks if a date matches a cron pattern.
-
-- `moment`: Date to check.
-- `cron`: Cron pattern to match against.
-
-## Example: Task Management
+Use `execEvery` to schedule a recurring task that runs every fixed number of seconds:
 
 ```typescript
-import { Chronos } from "chronos-scheduler";
-
-const scheduler = new Chronos();
-
-const task = scheduler.schedule("*/2 * * * *", () => {
-  console.log("This task runs every 2 minutes");
-});
-
-// Stop the task after 10 minutes
-setTimeout(() => {
-  task.stop();
-  console.log("Task stopped");
-}, 600000);
+c1.execEvery(
+  1000,
+  () => {
+    console.log("hello world");
+  },
+  {
+    name: "Task test",
+  }
+);
 ```
 
-## Cron Expression Format
+### Cron Expression Tasks
 
-| Field        | Allowed Values            | Special Characters |
-| ------------ | ------------------------- | ------------------ |
-| Seconds      | 0-59                      | `, - * /`          |
-| Minutes      | 0-59                      | `, - * /`          |
-| Hours        | 0-23                      | `, - * /`          |
-| Day of Month | 1-31                      | `, - * / ?`        |
-| Month        | 1-12 or JAN-DEC           | `, - * /`          |
-| Day of Week  | 0-6 (Sunday=0) or SUN-SAT | `, - * / ?`        |
+You can schedule tasks using standard cron syntax:
 
-## Contributing
+```typescript
+c1.schedule(
+  "* * * * * *",
+  () => {
+    console.log("every second");
+  },
+  {
+    name: "scheduler cron",
+    timeZone: "America/Sao_Paulo",
+    debugTick: () => console.log("Ticking every second"),
+  }
+);
+```
 
-Contributions are welcome! Feel free to submit issues or pull requests.
+### One-Time Tasks
 
-## License
+Schedule a one-shot task to run at a specific date/time:
 
-This project is licensed under the MIT License.
+```typescript
+const now = addSeconds(new Date(), 60000);
+c1.oneShot(
+  now,
+  () => {
+    console.log("One shot function");
+  },
+  {
+    name: "One shot cron",
+    debugTick: () => console.log("Ticking"),
+  }
+);
+```
+
+### Using makeCron
+
+`makeCron` is a shorthand for scheduling cron-like tasks:
+
+```typescript
+c1.makeCron({
+  expr: CronExpressions.EVERY_10_SECONDS,
+  handler: () => console.log("Every 10 seconds"),
+  options: { name: "test cron" },
+});
+```
+
+## Introspection Methods
+
+### List All Tasks
+
+```typescript
+c1.listTasks(); // Logs all registered tasks to the console
+```
+
+### Access All Tasks
+
+```typescript
+const allTasks = c1.tasks(); // Returns an array of Task objects
+```
+
+### Preview Next Executions
+
+```typescript
+const futureExecutions = c1.previewNext(
+  CronExpressions.EVERY_10_MINUTES,
+  10,
+  "America/Sao_Paulo"
+);
+console.log(futureExecutions);
+```
+
+### Preview Past Executions
+
+```typescript
+const pastExecutions = c1.previewPast(
+  CronExpressions.EVERY_10_MINUTES,
+  10,
+  "America/Sao_Paulo"
+);
+console.log(pastExecutions);
+```
+
+## Validating and Matching Cron Expressions
+
+### Validate Cron Expression
+
+```typescript
+const isValid = c1.validateCron("* * * * * *"); // Returns true
+const isInvalid = c1.validateCron("* a b c 0"); // Returns false
+```
+
+### Match Date Against Cron
+
+```typescript
+const matches = c1.matchesCron(new Date(), CronExpressions.EVERY_15_MINUTES);
+console.log(matches); // true or false
+```
+
+## Advanced Usage
+
+### Custom Timezones
+
+Tasks can be scheduled in specific timezones using the `timeZone` option:
+
+```typescript
+c1.schedule(
+  "0 0 * * *",
+  () => {
+    console.log("Midnight task");
+  },
+  {
+    name: "Midnight Task",
+    timeZone: "America/New_York",
+  }
+);
+```
+
+### Debugging Task Execution
+
+Use the `debugTick` option to log each tick before task execution:
+
+```typescript
+c1.schedule(
+  "*/5 * * * * *",
+  () => {
+    console.log("Runs every 5 seconds");
+  },
+  {
+    debugTick: () => console.log("Ticking..."),
+  }
+);
+```
+
+## Summary
+
+Chronos provides a powerful and flexible API for managing scheduled tasks using cron expressions, one-shot executions, and recurring intervals. With support for logging, introspection, and advanced options like timezones and debugging, it is a robust solution for task scheduling needs.
