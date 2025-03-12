@@ -30,7 +30,7 @@ export type TaskArgs = {
 export type SchedulingConstructor = {
   expr: number | string | CronExpressions;
   handler: VoidFunction;
-  options: SchedulingOptions;
+  options?: SchedulingOptions;
 };
 
 export type SchedulingOptions = {

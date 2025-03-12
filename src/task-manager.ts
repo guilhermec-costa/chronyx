@@ -1,7 +1,7 @@
 import EventEmitter from "events";
 import { Configurator } from "./configurator";
 import { CronLogger } from "./logger/logger";
-import { Task } from "./task";
+import { Task, TaskProxy } from "./task";
 import { CronParts, CronType } from "./types";
 
 export type TaskExecutionContainer = Map<
@@ -37,7 +37,7 @@ export class TaskManager {
   public makeTask(
     name: string,
     repr: string,
-    handler: () => void,
+    handler: VoidFunction,
     type: CronType,
     autoStart?: boolean,
     parts?: CronParts,

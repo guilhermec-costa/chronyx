@@ -1,6 +1,5 @@
-import { Task } from "../task";
+import { Task, TaskProxy } from "../task";
 import { TaskArgs } from "../types";
-import { getTzNow } from "../utils";
 import { Scheduler } from "./scheduler";
 
 export class WithRecurrence extends Scheduler {
@@ -13,14 +12,14 @@ export class WithRecurrence extends Scheduler {
       name = "unknown",
       timeZone = "utc",
     },
-  }: TaskArgs): Task {
+  }: TaskArgs): TaskProxy {
     this.logger.debug(`Scheduling task using Recurrence method: ${repr}`);
     const timeout = Number(repr);
     if (timeout < 0) {
       throw new Error("frequency interval must be greater than 0");
     }
 
-    const t: Task = this.taskManager.makeTask(
+    const t = this.taskManager.makeTask(
       name,
       repr,
       handler,
@@ -32,10 +31,7 @@ export class WithRecurrence extends Scheduler {
 
     this.applyAutoStartConfig(t);
     const i = setInterval(() => {
-      if (t.ableToRun()) {
-        handler();
-        t.updateLastRun(getTzNow(t.tz));
-      }
+      t.exec();
     }, timeout);
 
     let tickerId;
@@ -48,6 +44,6 @@ export class WithRecurrence extends Scheduler {
       debugTickerId: tickerId,
     });
 
-    return t;
+    return new TaskProxy(t);
   }
 }

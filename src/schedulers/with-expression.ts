@@ -1,4 +1,4 @@
-import { Task } from "../task";
+import { Task, TaskProxy } from "../task";
 import { TaskArgs } from "../types";
 import { getTzNow } from "../utils";
 import { Scheduler } from "./scheduler";
@@ -8,7 +8,7 @@ export class WithExpression extends Scheduler {
     handler,
     repr,
     options: { autoStart, debugTick, name = "unknown", timeZone = "utc" },
-  }: TaskArgs): Task {
+  }: TaskArgs): TaskProxy {
     this.logger.debug(`Scheduling task using Expression method: ${repr}`);
     const parsedCron = this.patternValidator.getCronPartsIfValid(
       repr as string
@@ -25,10 +25,9 @@ export class WithExpression extends Scheduler {
 
     this.applyAutoStartConfig(t);
     const i = setInterval(() => {
-      const now = getTzNow(t.tz);
-      if (this.patternValidator.matchesCron(now, parsedCron) && t.ableToRun()) {
-        handler();
-        t.updateLastRun(now);
+      const now = getTzNow(t.currentTimezone());
+      if (this.patternValidator.matchesCron(now, parsedCron)) {
+        t.exec();
       }
     }, 1000);
 
@@ -41,6 +40,7 @@ export class WithExpression extends Scheduler {
       mainExecutorId: i,
       debugTickerId: tickerId,
     });
-    return t;
+
+    return new TaskProxy(t);
   }
 }

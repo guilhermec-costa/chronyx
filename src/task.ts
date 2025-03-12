@@ -13,7 +13,7 @@ export class DebugTickerExecutor {
    * @param cb - The callback function to be executed.
    */
   constructor(
-    public readonly executorId: number,
+    public readonly executorId: NodeJS.Timeout,
     public readonly cb: VoidFunction
   ) {}
 }
@@ -21,14 +21,15 @@ export class Task {
   private readonly id: string;
   public readonly name: string;
   public readonly expression: string;
-  public handler: () => void;
+  private handler: VoidFunction;
   private readonly cronType: CronType;
   private status: TaskStatus;
-  public readonly cronParts?: CronParts;
-  public readonly autoStart: boolean;
+  private readonly cronParts?: CronParts;
+  private readonly autoStart: boolean;
   private lastRunAt?: Date;
   private readonly emitter: EventEmitter;
-  public readonly tz: string;
+  private readonly tz: string;
+  private presentableHandler: VoidFunction;
 
   /**
    * Creates a new scheduled task instance.
@@ -44,7 +45,7 @@ export class Task {
   constructor(
     name: string,
     expression: string,
-    handler: () => void,
+    handler: VoidFunction,
     cronType: CronType,
     emitter: EventEmitter,
     cronParts?: CronParts,
@@ -54,7 +55,11 @@ export class Task {
     this.id = uuidv4();
     this.name = name;
     this.expression = expression;
-    this.handler = handler;
+    this.presentableHandler = handler;
+    this.handler = () => {
+      handler();
+      this.lastRunAt = new Date();
+    };
     this.cronType = cronType;
     this.status = "CREATED";
     this.cronParts = cronParts;
@@ -77,9 +82,10 @@ Name: ${this.name}
 Type: ${this.cronType}
 Status: ${this.status}
 Expression: ${this.expression}
-Handler: ${this.handler.toString()}
+Handler: ${this.presentableHandler.toString()}
 AutoStart: ${this.autoStart}
-LastRun: ${this.lastRunAt}`
+LastRun: ${this.lastRunAt}
+Timezone: ${this.tz}`
     );
   }
 
@@ -88,6 +94,12 @@ LastRun: ${this.lastRunAt}`
    */
   public resume() {
     this.status = "RUNNING";
+  }
+
+  public exec() {
+    if (this.ableToRun()) {
+      this.handler();
+    }
   }
 
   /**
@@ -127,12 +139,50 @@ LastRun: ${this.lastRunAt}`
     return this.id;
   }
 
-  /**
-   * Updates the last execution date of the task.
-   *
-   * @param date - The date of the last execution.
-   */
-  public updateLastRun(date: Date) {
-    this.lastRunAt = date;
+  public getCronParts(): CronParts | undefined {
+    return this.cronParts;
+  }
+
+  public setHandler(fn: VoidFunction) {
+    this.handler = () => {
+      fn();
+      this.lastRunAt = new Date();
+    };
+  }
+
+  public currentTimezone(): string {
+    return this.tz;
+  }
+
+  public canAutoStart(): boolean {
+    return this.autoStart;
+  }
+}
+
+export class TaskProxy {
+  constructor(private readonly task: Task) {}
+
+  public resume() {
+    this.task.resume();
+  }
+
+  public stop() {
+    this.task.stop();
+  }
+
+  public pause() {
+    this.task.pause();
+  }
+
+  public prettyPrint() {
+    this.task.prettyPrint();
+  }
+
+  public setHandler(fn: VoidFunction) {
+    this.task.setHandler(fn);
+  }
+
+  public getCronParts() {
+    return this.task.getCronParts();
   }
 }

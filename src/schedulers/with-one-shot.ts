@@ -1,3 +1,4 @@
+import { TaskProxy } from "../task";
 import { TaskArgs } from "../types";
 import { getTzNow } from "../utils";
 import { Scheduler } from "./scheduler";
@@ -7,7 +8,7 @@ export class WithOneShot extends Scheduler {
     handler,
     repr,
     options: { autoStart, debugTick, name = "unknown", timeZone = "utc" },
-  }: TaskArgs) {
+  }: TaskArgs): TaskProxy {
     this.logger.debug(`Scheduling task using One Shot method: ${repr}`);
     const moment = new Date(repr);
     const isMomentValid = moment.getTime() >= Date.now();
@@ -29,10 +30,9 @@ export class WithOneShot extends Scheduler {
     );
     this.applyAutoStartConfig(t);
     const i = setInterval(() => {
-      const now = getTzNow(t.tz);
-      if (Date.now() >= moment.getTime() && t.ableToRun()) {
-        handler();
-        t.updateLastRun(new Date());
+      const now = getTzNow(t.currentTimezone());
+      if (Date.now() >= moment.getTime()) {
+        t.exec();
         clearInterval(i);
       }
     }, 1000);
@@ -47,6 +47,6 @@ export class WithOneShot extends Scheduler {
       debugTickerId: tickerId,
     });
 
-    return t;
+    return new TaskProxy(t);
   }
 }

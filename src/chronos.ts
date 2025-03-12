@@ -5,7 +5,7 @@ import { PatternValidator } from "./pattern-validator";
 import { WithExpression } from "./schedulers/with-expression";
 import { WithOneShot } from "./schedulers/with-one-shot";
 import { WithRecurrence } from "./schedulers/with-recurrence";
-import { Task } from "./task";
+import { Task, TaskProxy } from "./task";
 import { TaskManager } from "./task-manager";
 import {
   ConfigOptions,
@@ -120,11 +120,11 @@ export class Chronos {
   }
 
   public previewNextTaskExecution(t: Task, n: number) {
-    return this.previewNext(t.expression, n, t.tz);
+    return this.previewNext(t.expression, n, t.currentTimezone());
   }
 
   public previewPastTaskExecution(t: Task, n: number) {
-    return this.previewPast(t.expression, n, t.tz);
+    return this.previewPast(t.expression, n, t.currentTimezone());
   }
 
   /**
@@ -160,7 +160,7 @@ export class Chronos {
     expr: number | string | CronExpressions,
     handler: VoidFunction,
     options?: SchedulingOptions
-  ): Task {
+  ): TaskProxy {
     if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
     switch (typeof expr) {
       case "string": {
@@ -187,7 +187,11 @@ export class Chronos {
     }
   }
 
-  public makeCron({ expr, handler, options }: SchedulingConstructor): Task {
+  public makeCron({
+    expr,
+    handler,
+    options,
+  }: SchedulingConstructor): TaskProxy {
     return this.schedule(expr, handler, options);
   }
 
@@ -202,7 +206,7 @@ export class Chronos {
     freq: number,
     handler: VoidFunction,
     options?: SchedulingOptions
-  ): Task {
+  ): TaskProxy {
     if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
     return this.withRecurrenceScheduler.schedule({
       handler,
@@ -222,7 +226,7 @@ export class Chronos {
     moment: Date,
     handler: VoidFunction,
     options?: SchedulingOptions
-  ): Task {
+  ): TaskProxy {
     if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
     return this.withOneShotScheduler.schedule({
       handler,
