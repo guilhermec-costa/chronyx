@@ -1,5 +1,7 @@
 # Chronyx
 
+> ⚠️ **Note:** This project is in the early stages of development and is considered **unstable**. Interfaces and behaviors may change without prior notice.
+
 ## Introduction
 
 `Chronyx` is a flexible and extensible task scheduler that supports:
