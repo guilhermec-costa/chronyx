@@ -3,7 +3,7 @@ import { CronLogger } from "./logger/logger";
 import { ConfigOptions, CronLogLevel } from "./types";
 
 export class Configurator {
-  public configs!: ConfigOptions;
+  public configs: ConfigOptions;
   public logger: CronLogger;
 
   public constructor(opts: ConfigOptions) {

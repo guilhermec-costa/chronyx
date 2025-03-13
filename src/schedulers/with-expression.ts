@@ -1,5 +1,5 @@
 import { Task, TaskProxy } from "../task";
-import { TaskArgs } from "../types";
+import { CronParts, TaskArgs } from "../types";
 import { getTzNow } from "../utils";
 import { Scheduler } from "./scheduler";
 
@@ -29,7 +29,7 @@ export class WithExpression extends Scheduler {
       if (this.patternValidator.matchesCron(now, parsedCron)) {
         t.exec();
       }
-    }, 1000);
+    }, this.defineTimeout(t.getCronParts() as CronParts));
 
     let tickerId;
     if (debugTick) {

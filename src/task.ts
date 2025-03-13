@@ -106,7 +106,9 @@ Timezone: ${this.tz}`
    * Pauses the task execution.
    */
   public pause() {
-    this.status = "PAUSED";
+    if (this.status !== "PAUSED" && this.status !== "KILLED") {
+      this.status = "PAUSED";
+    }
   }
 
   /**

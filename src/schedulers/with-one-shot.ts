@@ -1,5 +1,5 @@
 import { TaskProxy } from "../task";
-import { TaskArgs } from "../types";
+import { CronParts, TaskArgs } from "../types";
 import { getTzNow } from "../utils";
 import { Scheduler } from "./scheduler";
 
@@ -35,7 +35,7 @@ export class WithOneShot extends Scheduler {
         t.exec();
         clearInterval(i);
       }
-    }, 1000);
+    }, this.defineTimeout(t.getCronParts() as CronParts));
 
     let tickerId;
     if (debugTick) {
