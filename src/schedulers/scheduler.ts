@@ -15,16 +15,8 @@ export abstract class Scheduler {
   }
 
   public applyAutoStartConfig(t: Task) {
-    const { initializationMethod } = this.configurator.configs;
-    if (initializationMethod === "respectMyConfig") {
-      if (t.canAutoStart()) {
-        t.resume();
-      }
-      return;
-    }
-    if (initializationMethod === "autoStartAll") {
+    if (t.canAutoStart()) {
       t.resume();
-      return;
     }
   }
 

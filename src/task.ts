@@ -5,7 +5,7 @@ import EventEmitter from "events";
 
 export type TaskStatus = "CREATED" | "RUNNING" | "KILLED" | "PAUSED";
 
-export class DebugTickerExecutor {
+export class TimeoutExecutor {
   /**
    * Represents an executor for scheduled tasks in debug mode.
    *
@@ -84,7 +84,7 @@ Status: ${this.status}
 Expression: ${this.expression}
 Handler: ${this.presentableHandler.toString()}
 AutoStart: ${this.autoStart}
-LastRun: ${this.lastRunAt}
+LastRun: ${this.lastRunAt?.toString()}
 Timezone: ${this.tz}`
     );
   }

@@ -28,7 +28,7 @@ export type TaskArgs = {
 };
 
 export type SchedulingConstructor = {
-  expr: number | string | CronExpressions;
+  expr: string | CronExpressions;
   handler: VoidFunction;
   options?: SchedulingOptions;
 };
@@ -42,7 +42,6 @@ export type SchedulingOptions = {
 
 export type ConfigOptions = {
   logger?: LoggerOptions;
-  initializationMethod?: "autoStartAll" | "!autoStartAll" | "respectMyConfig";
 };
 
 export enum CronLogLevel {
@@ -52,8 +51,3 @@ export enum CronLogLevel {
   ERROR = "error",
   NONE = "none",
 }
-
-export type CronValidationResult = {
-  valid: boolean;
-  error?: string;
-};

@@ -17,7 +17,6 @@ You can configure the Chronos scheduler using the `ConfigOptions` object. Here a
 
 ```typescript
 export const DefaultChronosConfig: ConfigOptions = {
-  initializationMethod: "autoStartAll", // Automatically starts all scheduled tasks
   logger: {
     level: CronLogLevel.INFO, // Log level (INFO, DEBUG, ERROR)
     transporters: [new CronLogTransport.ConsoleTransport()], // Outputs logs to the console
@@ -31,10 +30,9 @@ export const DefaultSchedulingOptions: SchedulingOptions = {
 
 ### ConfigOptions
 
-| Property             | Type                                         | Description                                |
-| -------------------- | -------------------------------------------- | ------------------------------------------ |
-| initializationMethod | "autoStartAll-!autoStartall-respectMyConfig" | Defines whether tasks start automatically  |
-| logger               | LoggerOptions                                | Customizes log levels and log destinations |
+| Property | Type          | Description                                |
+| -------- | ------------- | ------------------------------------------ |
+| logger   | LoggerOptions | Customizes log levels and log destinations |
 
 ### LoggerOptions
 
@@ -51,7 +49,6 @@ You can initialize Chronos with the default configuration or provide custom opti
 const c1 = new Chronos();
 /* Assumes the default configuration
 {
-  initializationMethod: "autoStartAll",
   logger: {
     level: CronLogLevel.INFO,
     transporters: [new CronLogTransport.ConsoleTransport()],
@@ -61,7 +58,6 @@ const c1 = new Chronos();
 
 // Custom cron manager
 const c2 = new Chronos({
-  initializationMethod: "autoStartAll",
   logger: {
     level: CronLogLevel.DEBUG,
     transporters: [

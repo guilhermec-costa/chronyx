@@ -36,11 +36,7 @@ export class WithExpression extends Scheduler {
       tickerId = this.debugTickerActivator(t, debugTick);
     }
 
-    this.taskManager.executorStorage.set(t.getId(), {
-      mainExecutorId: i,
-      debugTickerId: tickerId,
-    });
-
+    this.taskManager.addExecutorConfig(t, i, tickerId);
     return new TaskProxy(t);
   }
 }

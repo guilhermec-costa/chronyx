@@ -11,8 +11,6 @@ import {
   ConfigOptions,
   CRON_LIMITS,
   CronLogLevel,
-  CronParts,
-  CronValidationResult,
   SchedulingConstructor,
   SchedulingOptions,
 } from "./types";
@@ -22,7 +20,6 @@ import { validateTimezone } from "./utils";
 import { CronLogTransport } from "./logger/log-transporters";
 
 export const DefaultChronosConfig: ConfigOptions = {
-  initializationMethod: "autoStartAll",
   logger: {
     level: CronLogLevel.INFO,
     transporters: [new CronLogTransport.ConsoleTransport()],
@@ -112,7 +109,7 @@ export class Chronos {
     const parsedCron = this.patternValidator.getCronPartsIfValid(expr);
     while (previews.length < n) {
       nextPreview = addSeconds(nextPreview, 1);
-      if (this._matchesCron(nextPreview, parsedCron)) {
+      if (this.patternValidator.matchesCron(nextPreview, parsedCron)) {
         previews.push(nextPreview);
       }
     }
@@ -142,7 +139,7 @@ export class Chronos {
     const parsedCron = this.patternValidator.getCronPartsIfValid(expr);
     while (previews.length < n) {
       nextPreview = subSeconds(nextPreview, 1);
-      if (this._matchesCron(nextPreview, parsedCron)) {
+      if (this.patternValidator.matchesCron(nextPreview, parsedCron)) {
         previews.push(nextPreview);
       }
     }
@@ -157,28 +154,16 @@ export class Chronos {
    * @returns The scheduled Task object.
    */
   public schedule(
-    expr: number | string | CronExpressions,
+    expr: string | CronExpressions,
     handler: VoidFunction,
     options?: SchedulingOptions
   ): TaskProxy {
     if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
-    switch (typeof expr) {
-      case "string": {
-        return this.withExpressionScheduler.schedule({
-          handler,
-          repr: expr.toString(),
-          options: options || DefaultSchedulingOptions,
-        });
-      }
-
-      case "number": {
-        return this.withRecurrenceScheduler.schedule({
-          handler,
-          repr: expr.toString(),
-          options: options || DefaultSchedulingOptions,
-        });
-      }
-    }
+    return this.withExpressionScheduler.schedule({
+      handler,
+      repr: expr.toString(),
+      options: options || DefaultSchedulingOptions,
+    });
   }
 
   private validateSchedulingTimezone(tz: string) {
@@ -286,13 +271,9 @@ export class Chronos {
   /**
    * Checks if a given date matches a cron pattern.
    * @param moment Date to check.
-   * @param cron Cron pattern to match against.
+   * @param expr The cron expression
    * @returns True if the date matches the cron pattern.
    */
-  private _matchesCron(moment: Date, cron: CronParts) {
-    return this.patternValidator.matchesCron(moment, cron);
-  }
-
   public matchesCron(moment: Date, expr: string) {
     const parsedCron = this.patternValidator.getCronPartsIfValid(expr);
     return this.patternValidator.matchesCron(moment, parsedCron);
