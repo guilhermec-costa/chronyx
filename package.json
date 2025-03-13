@@ -1,11 +1,15 @@
 {
   "name": "chronyx",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Chron Job package",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guilhermec-costa/chronyx/tree/master/src"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsup",
