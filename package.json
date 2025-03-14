@@ -1,6 +1,6 @@
 {
   "name": "chronyx",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Chron Job package",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

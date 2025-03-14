@@ -19,7 +19,7 @@ export const CRON_LIMITS = {
   dayOfWeek: [0, 7],
 };
 
-export type CronType = "IntervalBased" | "ExpressionBased";
+export type CronType = "IntervalBased" | "ExpressionBased" | "TimeoutBased";
 
 export type TaskArgs = {
   repr: string;

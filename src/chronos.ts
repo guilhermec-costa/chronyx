@@ -18,6 +18,7 @@ import { addSeconds, subSeconds } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { validateTimezone } from "./utils";
 import { CronLogTransport } from "./logger/log-transporters";
+import { WithTimeout } from "./schedulers/with-timeout";
 
 export const DefaultChronosConfig: ConfigOptions = {
   logger: {
@@ -40,6 +41,7 @@ export class Chronos {
   private readonly withExpressionScheduler: WithExpression;
   private readonly withOneShotScheduler: WithOneShot;
   private readonly withRecurrenceScheduler: WithRecurrence;
+  private readonly withTimeoutScheduler: WithTimeout;
 
   /**
    * Initializes the Chronos scheduler with optional configuration.
@@ -66,6 +68,11 @@ export class Chronos {
       this.patternValidator
     );
     this.withRecurrenceScheduler = new WithRecurrence(
+      this.taskManager,
+      this.configurator,
+      this.patternValidator
+    );
+    this.withTimeoutScheduler = new WithTimeout(
       this.taskManager,
       this.configurator,
       this.patternValidator
@@ -220,6 +227,19 @@ export class Chronos {
     });
   }
 
+  public timeout(
+    timeout: number,
+    handler: VoidFunction,
+    opts?: SchedulingOptions
+  ) {
+    if (opts?.timeZone) this.validateSchedulingTimezone(opts.timeZone);
+    return this.withTimeoutScheduler.schedule({
+      handler,
+      timeout,
+      options: opts || DefaultSchedulingOptions,
+    });
+  }
+
   public validateCron(expr: string): boolean {
     try {
       const parts = this.patternValidator.parseExpr(expr);
@@ -277,5 +297,28 @@ export class Chronos {
   public matchesCron(moment: Date, expr: string) {
     const parsedCron = this.patternValidator.getCronPartsIfValid(expr);
     return this.patternValidator.matchesCron(moment, parsedCron);
+  }
+
+  public Scheduler(
+    expression: string | CronExpressions,
+    opts?: SchedulingOptions
+  ) {
+    console.log("on method");
+    const toCall = (
+      expr: string,
+      handler: VoidFunction,
+      opts?: SchedulingOptions
+    ) => {
+      this.schedule(expr, handler, opts);
+    };
+
+    return function (
+      target: any,
+      propertyKey: string,
+      descriptor: PropertyDescriptor
+    ) {
+      console.log("on runtime ");
+      toCall(expression, descriptor.value, opts);
+    };
   }
 }
