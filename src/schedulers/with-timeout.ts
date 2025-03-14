@@ -1,18 +1,25 @@
 import { TaskProxy } from "../task";
-import { SchedulingOptions, TaskArgs } from "../types";
 import { Scheduler } from "./scheduler";
 
+export type TimeoutOptions = {
+  name?: string;
+  debugTick?: VoidFunction;
+};
 export type TimeoutSchedulerArgs = {
   handler: VoidFunction;
   timeout: number;
-  options: SchedulingOptions;
+  options: TimeoutOptions;
+};
+
+export const DefaultTimeoutOptions: TimeoutOptions = {
+  name: "unknown",
 };
 
 export class WithTimeout extends Scheduler {
   public schedule({
     handler,
     timeout,
-    options: { autoStart, debugTick, name = "unknown", timeZone = "utc" },
+    options: { debugTick, name = "unknown" },
   }: TimeoutSchedulerArgs): TaskProxy {
     this.logger.debug(`Scheduling task using Timeout method: ${timeout}`);
 
@@ -21,21 +28,24 @@ export class WithTimeout extends Scheduler {
       timeout.toString(),
       handler,
       "TimeoutBased",
-      autoStart,
-      undefined,
-      timeZone
+      true,
+      undefined
     );
-    this.applyAutoStartConfig(t);
-    const i = setTimeout(() => {
-      t.exec();
-      clearTimeout(i);
-    }, timeout);
 
-    let tickerId;
-    if (debugTick) {
-      tickerId = this.debugTickerActivator(t, debugTick);
-    }
-    this.taskManager.addExecutorConfig(t, i, tickerId);
+    let tickerId: NodeJS.Timeout | undefined;
+    if (debugTick) tickerId = this.debugTickerActivator(t, debugTick);
+
+    t.setInitFn(() => {
+      const i = setTimeout(() => {
+        t.exec();
+        clearTimeout(i);
+        if (tickerId) clearInterval(tickerId);
+      }, timeout);
+
+      this.taskManager.addExecutorConfig(t, i, tickerId);
+    });
+
+    this.checkAutoStarting(t);
     return new TaskProxy(t);
   }
 }

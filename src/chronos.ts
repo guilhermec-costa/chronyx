@@ -3,7 +3,11 @@ import { CronExpressions } from "./defined-expr";
 import { CronLogger } from "./logger/logger";
 import { PatternValidator } from "./pattern-validator";
 import { WithExpression } from "./schedulers/with-expression";
-import { WithOneShot } from "./schedulers/with-one-shot";
+import {
+  DefaultOneShotOptions,
+  OneShotOptions,
+  WithOneShot,
+} from "./schedulers/with-one-shot";
 import { WithRecurrence } from "./schedulers/with-recurrence";
 import { Task, TaskProxy } from "./task";
 import { TaskManager } from "./task-manager";
@@ -16,9 +20,14 @@ import {
 } from "./types";
 import { addSeconds, subSeconds } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
-import { validateTimezone } from "./utils";
+import { getMachineTz, validateTimezone } from "./utils";
 import { CronLogTransport } from "./logger/log-transporters";
-import { WithTimeout } from "./schedulers/with-timeout";
+import {
+  DefaultTimeoutOptions,
+  TimeoutOptions,
+  TimeoutSchedulerArgs,
+  WithTimeout,
+} from "./schedulers/with-timeout";
 
 export const DefaultChronosConfig: ConfigOptions = {
   logger: {
@@ -29,6 +38,8 @@ export const DefaultChronosConfig: ConfigOptions = {
 
 export const DefaultSchedulingOptions: SchedulingOptions = {
   autoStart: true,
+  name: "unknown",
+  timeZone: getMachineTz(),
 };
 /**
  * Main class to manage scheduling tasks using cron-like expressions.
@@ -217,26 +228,25 @@ export class Chronos {
   public oneShot(
     moment: Date,
     handler: VoidFunction,
-    options?: SchedulingOptions
+    options?: OneShotOptions
   ): TaskProxy {
     if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
     return this.withOneShotScheduler.schedule({
       handler,
-      repr: moment.toString(),
-      options: options || DefaultSchedulingOptions,
+      moment,
+      options: options || DefaultOneShotOptions,
     });
   }
 
   public timeout(
     timeout: number,
     handler: VoidFunction,
-    opts?: SchedulingOptions
-  ) {
-    if (opts?.timeZone) this.validateSchedulingTimezone(opts.timeZone);
-    return this.withTimeoutScheduler.schedule({
+    opts?: TimeoutOptions
+  ): void {
+    this.withTimeoutScheduler.schedule({
       handler,
       timeout,
-      options: opts || DefaultSchedulingOptions,
+      options: opts || DefaultTimeoutOptions,
     });
   }
 

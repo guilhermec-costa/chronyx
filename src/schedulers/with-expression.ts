@@ -1,13 +1,18 @@
 import { Task, TaskProxy } from "../task";
 import { CronParts, TaskArgs } from "../types";
-import { getTzNow } from "../utils";
+import { getMachineTz, getTzNow } from "../utils";
 import { Scheduler } from "./scheduler";
 
 export class WithExpression extends Scheduler {
   public schedule({
     handler,
     repr,
-    options: { autoStart, debugTick, name = "unknown", timeZone = "utc" },
+    options: {
+      autoStart = true,
+      debugTick,
+      name = "unknown",
+      timeZone = getMachineTz(),
+    },
   }: TaskArgs): TaskProxy {
     this.logger.debug(`Scheduling task using Expression method: ${repr}`);
     const parsedCron = this.patternValidator.getCronPartsIfValid(
@@ -23,20 +28,23 @@ export class WithExpression extends Scheduler {
       timeZone
     );
 
-    this.applyAutoStartConfig(t);
-    const i = setInterval(() => {
-      const now = getTzNow(t.currentTimezone());
-      if (this.patternValidator.matchesCron(now, parsedCron)) {
-        t.exec();
+    t.setInitFn(() => {
+      const i = setInterval(() => {
+        const now = getTzNow(t.currentTimezone());
+        if (this.patternValidator.matchesCron(now, parsedCron)) {
+          t.exec();
+        }
+      }, this.defineTimeout(t.getCronParts() as CronParts));
+
+      let tickerId;
+      if (debugTick) {
+        tickerId = this.debugTickerActivator(t, debugTick);
       }
-    }, this.defineTimeout(t.getCronParts() as CronParts));
 
-    let tickerId;
-    if (debugTick) {
-      tickerId = this.debugTickerActivator(t, debugTick);
-    }
+      this.taskManager.addExecutorConfig(t, i, tickerId);
+    });
 
-    this.taskManager.addExecutorConfig(t, i, tickerId);
+    this.checkAutoStarting(t);
     return new TaskProxy(t);
   }
 }

@@ -1,5 +1,6 @@
-import { Task, TaskProxy } from "../task";
+import { TaskProxy } from "../task";
 import { TaskArgs } from "../types";
+import { getMachineTz } from "../utils";
 import { Scheduler } from "./scheduler";
 
 export class WithRecurrence extends Scheduler {
@@ -10,7 +11,7 @@ export class WithRecurrence extends Scheduler {
       autoStart = true,
       debugTick,
       name = "unknown",
-      timeZone = "utc",
+      timeZone = getMachineTz(),
     },
   }: TaskArgs): TaskProxy {
     this.logger.debug(`Scheduling task using Recurrence method: ${repr}`);
@@ -29,17 +30,20 @@ export class WithRecurrence extends Scheduler {
       timeZone
     );
 
-    this.applyAutoStartConfig(t);
-    const i = setInterval(() => {
-      t.exec();
-    }, timeout);
+    t.setInitFn(() => {
+      const i = setInterval(() => {
+        t.exec();
+      }, timeout);
 
-    let tickerId;
-    if (debugTick) {
-      tickerId = this.debugTickerActivator(t, debugTick);
-    }
+      let tickerId;
+      if (debugTick) {
+        tickerId = this.debugTickerActivator(t, debugTick);
+      }
 
-    this.taskManager.addExecutorConfig(t, i, tickerId);
+      this.taskManager.addExecutorConfig(t, i, tickerId);
+    });
+
+    this.checkAutoStarting(t);
     return new TaskProxy(t);
   }
 }

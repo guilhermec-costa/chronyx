@@ -30,3 +30,8 @@ export function validateTimezone(tz: string) {
     return false;
   }
 }
+
+export function getMachineTz() {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return tz;
+}

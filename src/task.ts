@@ -3,7 +3,7 @@ import { CronParts, CronType } from "./types";
 import { v4 as uuidv4, v4 } from "uuid";
 import EventEmitter from "events";
 
-export type TaskStatus = "CREATED" | "RUNNING" | "KILLED" | "PAUSED";
+export type TaskStatus = "CREATED" | "RUNNING" | "KILLED";
 
 export class TimeoutExecutor {
   /**
@@ -30,6 +30,7 @@ export class Task {
   private readonly emitter: EventEmitter;
   private readonly tz: string;
   private presentableHandler: VoidFunction;
+  private initFn?: VoidFunction;
 
   /**
    * Creates a new scheduled task instance.
@@ -68,6 +69,19 @@ export class Task {
     this.tz = timezone;
   }
 
+  public setInitFn(fn: VoidFunction) {
+    this.initFn = fn;
+  }
+
+  public start() {
+    if (this.initFn) {
+      this.status = "RUNNING";
+      this.initFn();
+      this.initFn = undefined;
+    } else {
+      throw new Error("Task was already started");
+    }
+  }
   /**
    * Prints the task details in a human-readable format.
    */
@@ -89,45 +103,19 @@ Timezone: ${this.tz}`
     );
   }
 
-  /**
-   * Resumes the task if it is paused.
-   */
-  public resume() {
-    this.status = "RUNNING";
-  }
-
   public exec() {
-    if (this.ableToRun()) {
+    if (this.status === "RUNNING") {
       this.handler();
     }
   }
 
-  /**
-   * Pauses the task execution.
-   */
-  public pause() {
-    if (this.status !== "PAUSED" && this.status !== "KILLED") {
-      this.status = "PAUSED";
-    }
+  public getStatus() {
+    return this.status;
   }
-
-  /**
-   * Checks if the task is eligible to run based on its status.
-   *
-   * @returns True if the task can run, otherwise false.
-   */
-  public ableToRun() {
-    return (
-      this.status !== "PAUSED" &&
-      this.status !== "KILLED" &&
-      this.status !== "CREATED"
-    );
-  }
-
   /**
    * Stops the task by emitting a "kill-task" event.
    */
-  public stop() {
+  public kill() {
     this.emitter.emit("kill-task", this.getId());
     this.status = "KILLED";
   }
@@ -164,16 +152,12 @@ Timezone: ${this.tz}`
 export class TaskProxy {
   constructor(private readonly task: Task) {}
 
-  public resume() {
-    this.task.resume();
+  public getStatus() {
+    this.task.getStatus();
   }
 
-  public stop() {
-    this.task.stop();
-  }
-
-  public pause() {
-    this.task.pause();
+  public kill() {
+    this.task.kill();
   }
 
   public prettyPrint() {
@@ -186,5 +170,9 @@ export class TaskProxy {
 
   public getCronParts() {
     return this.task.getCronParts();
+  }
+
+  public start() {
+    this.task.start();
   }
 }

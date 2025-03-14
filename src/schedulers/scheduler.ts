@@ -15,15 +15,13 @@ export abstract class Scheduler {
     this.logger = this.configurator.logger;
   }
 
-  public applyAutoStartConfig(t: Task) {
-    if (t.canAutoStart()) {
-      t.resume();
-    }
+  public checkAutoStarting(t: Task) {
+    if (t.canAutoStart()) t.start();
   }
 
   protected debugTickerActivator(t: Task, cb: VoidFunction): NodeJS.Timeout {
     const tickerId = setInterval(() => {
-      if (t.ableToRun()) {
+      if (t.getStatus() === "RUNNING") {
         cb();
       }
     }, 1000);
