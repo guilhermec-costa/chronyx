@@ -115,8 +115,12 @@ Timezone: ${this.tz}`
    * Stops the task by emitting a "kill-task" event.
    */
   public kill() {
-    this.emitter.emit("kill-task", this.getId());
-    this.status = "KILLED";
+    if (this.status !== "KILLED") {
+      this.emitter.emit("kill-task", this.getId());
+      this.status = "KILLED";
+    } else {
+      throw new Error("Task was already killed");
+    }
   }
 
   /**

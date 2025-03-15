@@ -155,10 +155,12 @@ const task = chronos.schedule(
   }
 );
 
-task.resume();
-task.pause();
-task.stop();
+task.getStatus();
+task.kill();
 task.prettyPrint();
+task.setHandler();
+task.getCronParts(); // only valid values for expression based crons. Otherwise, it will return undefined
+task.start();
 ```
 
 ### Pretty print the list of tasks
