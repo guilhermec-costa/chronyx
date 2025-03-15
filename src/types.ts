@@ -1,4 +1,3 @@
-import { CronExpressions } from "./defined-expr";
 import { LoggerOptions } from "./logger/logger";
 
 export type CronParts = {
@@ -20,25 +19,6 @@ export const CRON_LIMITS = {
 };
 
 export type CronType = "IntervalBased" | "ExpressionBased" | "TimeoutBased";
-
-export type TaskArgs = {
-  repr: string;
-  handler: () => void;
-  options: SchedulingOptions;
-};
-
-export type SchedulingConstructor = {
-  expr: string | CronExpressions;
-  handler: VoidFunction;
-  options?: SchedulingOptions;
-};
-
-export type SchedulingOptions = {
-  name?: string;
-  debugTick?: VoidFunction;
-  autoStart?: boolean;
-  timeZone?: string;
-};
 
 export type ConfigOptions = {
   logger?: LoggerOptions;

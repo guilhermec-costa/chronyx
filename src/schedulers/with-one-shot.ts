@@ -1,5 +1,5 @@
 import { TaskProxy } from "../task";
-import { CronParts, TaskArgs } from "../types";
+import { CronParts } from "../types";
 import { getMachineTz, getTzNow } from "../utils";
 import { Scheduler } from "./scheduler";
 
@@ -51,18 +51,17 @@ export class WithOneShot extends Scheduler {
     );
 
     t.setInitFn(() => {
+      let tickerId = undefined;
+      if (debugTick) tickerId = this.debugTickerActivator(t, debugTick);
+
       const i = setInterval(() => {
         const now = getTzNow(t.currentTimezone());
         if (Date.now() >= moment.getTime()) {
           t.exec();
-          clearInterval(i);
+          this.taskManager.emitKillEvent(t.getId());
         }
       }, 1000);
 
-      let tickerId;
-      if (debugTick) {
-        tickerId = this.debugTickerActivator(t, debugTick);
-      }
       this.taskManager.addExecutorConfig(t, i, tickerId);
     });
 

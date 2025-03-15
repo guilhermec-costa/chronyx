@@ -1,4 +1,3 @@
-import { TaskManager } from "./task-manager";
 import { CronParts, CronType } from "./types";
 import { v4 as uuidv4, v4 } from "uuid";
 import EventEmitter from "events";
@@ -153,7 +152,7 @@ export class TaskProxy {
   constructor(private readonly task: Task) {}
 
   public getStatus() {
-    this.task.getStatus();
+    return this.task.getStatus();
   }
 
   public kill() {

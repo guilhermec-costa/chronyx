@@ -1,33 +1,45 @@
 import { TaskProxy } from "../task";
-import { TaskArgs } from "../types";
-import { getMachineTz } from "../utils";
 import { Scheduler } from "./scheduler";
+
+export type RecurrenceOptions = {
+  name?: string;
+  debugTick?: VoidFunction;
+  autoStart?: boolean;
+};
+export type RecurrenceSchedulerArgs = {
+  handler: VoidFunction;
+  timeout: number;
+  options: RecurrenceOptions;
+};
+
+export const DefaultRecurrenceOptions: RecurrenceOptions = {
+  name: "unknown",
+  autoStart: true,
+};
 
 export class WithRecurrence extends Scheduler {
   public schedule({
     handler,
-    repr,
+    timeout,
     options: {
-      autoStart = true,
+      autoStart = DefaultRecurrenceOptions.autoStart,
       debugTick,
       name = "unknown",
-      timeZone = getMachineTz(),
     },
-  }: TaskArgs): TaskProxy {
-    this.logger.debug(`Scheduling task using Recurrence method: ${repr}`);
-    const timeout = Number(repr);
+  }: RecurrenceSchedulerArgs): TaskProxy {
+    this.logger.debug(`Scheduling task using Recurrence method: ${timeout}`);
     if (timeout < 0) {
       throw new Error("frequency interval must be greater than 0");
     }
 
     const t = this.taskManager.makeTask(
       name,
-      repr,
+      timeout.toString(),
       handler,
       "IntervalBased",
       autoStart,
       undefined,
-      timeZone
+      undefined
     );
 
     t.setInitFn(() => {
@@ -36,10 +48,7 @@ export class WithRecurrence extends Scheduler {
       }, timeout);
 
       let tickerId;
-      if (debugTick) {
-        tickerId = this.debugTickerActivator(t, debugTick);
-      }
-
+      if (debugTick) tickerId = this.debugTickerActivator(t, debugTick);
       this.taskManager.addExecutorConfig(t, i, tickerId);
     });
 

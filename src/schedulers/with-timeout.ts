@@ -38,8 +38,7 @@ export class WithTimeout extends Scheduler {
     t.setInitFn(() => {
       const i = setTimeout(() => {
         t.exec();
-        clearTimeout(i);
-        if (tickerId) clearInterval(tickerId);
+        this.taskManager.emitKillEvent(t.getId());
       }, timeout);
 
       this.taskManager.addExecutorConfig(t, i, tickerId);

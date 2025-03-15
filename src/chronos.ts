@@ -2,22 +2,25 @@ import { Configurator } from "./configurator";
 import { CronExpressions } from "./defined-expr";
 import { CronLogger } from "./logger/logger";
 import { PatternValidator } from "./pattern-validator";
-import { WithExpression } from "./schedulers/with-expression";
+import {
+  DefaultExpressionSchedulerOptions,
+  ExpressionSchedulerOptions,
+  SchedulingConstructor,
+  WithExpression,
+} from "./schedulers/with-expression";
 import {
   DefaultOneShotOptions,
   OneShotOptions,
   WithOneShot,
 } from "./schedulers/with-one-shot";
-import { WithRecurrence } from "./schedulers/with-recurrence";
+import {
+  DefaultRecurrenceOptions,
+  RecurrenceOptions,
+  WithRecurrence,
+} from "./schedulers/with-recurrence";
 import { Task, TaskProxy } from "./task";
 import { TaskManager } from "./task-manager";
-import {
-  ConfigOptions,
-  CRON_LIMITS,
-  CronLogLevel,
-  SchedulingConstructor,
-  SchedulingOptions,
-} from "./types";
+import { ConfigOptions, CRON_LIMITS, CronLogLevel } from "./types";
 import { addSeconds, subSeconds } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { getMachineTz, validateTimezone } from "./utils";
@@ -25,7 +28,6 @@ import { CronLogTransport } from "./logger/log-transporters";
 import {
   DefaultTimeoutOptions,
   TimeoutOptions,
-  TimeoutSchedulerArgs,
   WithTimeout,
 } from "./schedulers/with-timeout";
 
@@ -36,11 +38,6 @@ export const DefaultChronosConfig: ConfigOptions = {
   },
 };
 
-export const DefaultSchedulingOptions: SchedulingOptions = {
-  autoStart: true,
-  name: "unknown",
-  timeZone: getMachineTz(),
-};
 /**
  * Main class to manage scheduling tasks using cron-like expressions.
  */
@@ -174,13 +171,13 @@ export class Chronos {
   public schedule(
     expr: string | CronExpressions,
     handler: VoidFunction,
-    options?: SchedulingOptions
+    options?: ExpressionSchedulerOptions
   ): TaskProxy {
     if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
     return this.withExpressionScheduler.schedule({
       handler,
       repr: expr.toString(),
-      options: options || DefaultSchedulingOptions,
+      options: options || DefaultExpressionSchedulerOptions,
     });
   }
 
@@ -208,13 +205,12 @@ export class Chronos {
   public execEvery(
     freq: number,
     handler: VoidFunction,
-    options?: SchedulingOptions
+    options?: RecurrenceOptions
   ): TaskProxy {
-    if (options?.timeZone) this.validateSchedulingTimezone(options.timeZone);
     return this.withRecurrenceScheduler.schedule({
       handler,
-      repr: freq.toString(),
-      options: options || DefaultSchedulingOptions,
+      timeout: freq,
+      options: options || DefaultRecurrenceOptions,
     });
   }
 
@@ -311,13 +307,13 @@ export class Chronos {
 
   public Scheduler(
     expression: string | CronExpressions,
-    opts?: SchedulingOptions
+    opts?: ExpressionSchedulerOptions
   ) {
     console.log("on method");
     const toCall = (
       expr: string,
       handler: VoidFunction,
-      opts?: SchedulingOptions
+      opts?: ExpressionSchedulerOptions
     ) => {
       this.schedule(expr, handler, opts);
     };

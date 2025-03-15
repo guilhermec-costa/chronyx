@@ -1,19 +1,45 @@
-import { Task, TaskProxy } from "../task";
-import { CronParts, TaskArgs } from "../types";
+import { CronExpressions } from "../defined-expr";
+import { TaskProxy } from "../task";
+import { CronParts } from "../types";
 import { getMachineTz, getTzNow } from "../utils";
 import { Scheduler } from "./scheduler";
+
+export type ExpressionSchedulerOptions = {
+  name?: string;
+  debugTick?: VoidFunction;
+  timeZone?: string;
+  autoStart?: boolean;
+};
+
+export type ExpressionSchedulerArgs = {
+  handler: VoidFunction;
+  repr: string;
+  options: ExpressionSchedulerOptions;
+};
+
+export const DefaultExpressionSchedulerOptions: ExpressionSchedulerOptions = {
+  name: "unknown",
+  timeZone: getMachineTz(),
+  autoStart: true,
+};
+
+export type SchedulingConstructor = {
+  expr: string | CronExpressions;
+  handler: VoidFunction;
+  options?: ExpressionSchedulerOptions;
+};
 
 export class WithExpression extends Scheduler {
   public schedule({
     handler,
     repr,
     options: {
-      autoStart = true,
+      autoStart = DefaultExpressionSchedulerOptions.autoStart,
       debugTick,
       name = "unknown",
-      timeZone = getMachineTz(),
+      timeZone = DefaultExpressionSchedulerOptions.timeZone,
     },
-  }: TaskArgs): TaskProxy {
+  }: ExpressionSchedulerArgs): TaskProxy {
     this.logger.debug(`Scheduling task using Expression method: ${repr}`);
     const parsedCron = this.patternValidator.getCronPartsIfValid(
       repr as string
@@ -37,10 +63,7 @@ export class WithExpression extends Scheduler {
       }, this.defineTimeout(t.getCronParts() as CronParts));
 
       let tickerId;
-      if (debugTick) {
-        tickerId = this.debugTickerActivator(t, debugTick);
-      }
-
+      if (debugTick) tickerId = this.debugTickerActivator(t, debugTick);
       this.taskManager.addExecutorConfig(t, i, tickerId);
     });
 

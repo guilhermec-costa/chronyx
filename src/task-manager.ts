@@ -3,6 +3,7 @@ import { Configurator } from "./configurator";
 import { CronLogger } from "./logger/logger";
 import { Task, TaskProxy } from "./task";
 import { CronParts, CronType } from "./types";
+import { getMachineTz } from "./utils";
 
 export type TaskExecutionContainer = Map<
   String,
@@ -41,7 +42,7 @@ export class TaskManager {
     type: CronType,
     autoStart?: boolean,
     parts?: CronParts,
-    timezone: string = "utc"
+    timezone: string = getMachineTz()
   ): Task {
     const t = new Task(
       name,
@@ -76,11 +77,18 @@ export class TaskManager {
   public stopTask(tId: string) {
     const tConfig = this.executorStorage.get(tId);
     clearInterval(tConfig?.mainExecutorId);
+    this.logger.debug(`Task "${tId}" killed`);
+
     if (tConfig?.debugTickerId) {
       clearInterval(tConfig.debugTickerId);
+      this.logger.debug(
+        `Task "${tId}" debug ticker "${tConfig.debugTickerId}" killed`
+      );
     }
     this.executorStorage.delete(tId);
+  }
 
-    this.logger.debug(`Task "${tId}" killed`);
+  public emitKillEvent(taskId: string) {
+    this.eventEmitter.emit("kill-task", taskId);
   }
 }
