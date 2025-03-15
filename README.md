@@ -248,6 +248,70 @@ c1.schedule(
 );
 ```
 
+## Decorator-Based Scheduling (for Typescript)
+
+Chronos supports method scheduling through decorators, allowing you to annotate class methods for execution based on cron expressions, timeouts, one-shot tasks, and recurring intervals.
+
+### `@Scheduler(expression: string | CronExpressions, opts?: ExpressionSchedulerOptions)`
+
+Schedules a method to run based on a cron expression.
+
+```typescript
+import { Chronos, CronExpressions } from "chronos";
+
+const chronos = new Chronos();
+
+class TaskService {
+  @chronos.Scheduler(CronExpressions.EVERY_SECOND)
+  run() {
+    console.log("Running every second");
+  }
+}
+
+new TaskService();
+```
+
+### `@Timeout(timeout: number, opts?: TimeoutOptions)`
+
+Schedules a method to run once after a specified timeout (in milliseconds).
+
+```typescript
+class TaskService {
+  @chronos.Timeout(5000)
+  delayedTask() {
+    console.log("Executed after 5 seconds");
+  }
+}
+```
+
+### `@OneShot(moment: Date, opts?: OneShotOptions)`
+
+Schedules a method to run once at a specific date and time.
+
+```typescript
+class TaskService {
+  @chronos.OneShot(new Date(Date.now() + 10000))
+  futureTask() {
+    console.log("Executed after 10 seconds");
+  }
+}
+```
+
+### `@Every(frequency: number, opts?: RecurrenceOptions)`
+
+Schedules a method to run repeatedly at a fixed interval (in milliseconds).
+
+```typescript
+class TaskService {
+  @chronos.Every(3000)
+  repeatTask() {
+    console.log("Running every 3 seconds");
+  }
+}
+```
+
+...
+
 ## Summary
 
 Chronyx provides a powerful and flexible API for managing scheduled tasks using cron expressions, one-shot executions, and recurring intervals. With support for logging, introspection, and advanced options like timezones and debugging, it is a robust solution for task scheduling needs.

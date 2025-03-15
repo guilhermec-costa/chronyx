@@ -30,6 +30,7 @@ import {
   TimeoutOptions,
   WithTimeout,
 } from "./schedulers/with-timeout";
+import { time } from "console";
 
 export const DefaultChronosConfig: ConfigOptions = {
   logger: {
@@ -309,8 +310,7 @@ export class Chronos {
     expression: string | CronExpressions,
     opts?: ExpressionSchedulerOptions
   ) {
-    console.log("on method");
-    const toCall = (
+    const schedulerCb = (
       expr: string,
       handler: VoidFunction,
       opts?: ExpressionSchedulerOptions
@@ -323,8 +323,61 @@ export class Chronos {
       propertyKey: string,
       descriptor: PropertyDescriptor
     ) {
-      console.log("on runtime ");
-      toCall(expression, descriptor.value, opts);
+      schedulerCb(expression, descriptor.value, opts);
+    };
+  }
+
+  public Timeout(timeout: number, opts?: TimeoutOptions) {
+    const timeoutCb = (
+      timeout: number,
+      handler: VoidFunction,
+      opts?: TimeoutOptions
+    ) => {
+      this.timeout(timeout, handler, opts);
+    };
+
+    return function (
+      target: any,
+      propertyKey: string,
+      descriptor: PropertyDescriptor
+    ) {
+      timeoutCb(timeout, descriptor.value, opts);
+    };
+  }
+
+  public OneShot(moment: Date, opts?: OneShotOptions) {
+    const oneShotCb = (
+      moment: Date,
+      handler: VoidFunction,
+      opts?: OneShotOptions
+    ) => {
+      this.oneShot(moment, handler, opts);
+    };
+
+    return function (
+      target: any,
+      propertyKey: string,
+      descriptor: PropertyDescriptor
+    ) {
+      oneShotCb(moment, descriptor.value, opts);
+    };
+  }
+
+  public Every(frequency: number, opts?: RecurrenceOptions) {
+    const recurrenceCb = (
+      freq: number,
+      handler: VoidFunction,
+      opts?: RecurrenceOptions
+    ) => {
+      this.execEvery(freq, handler, opts);
+    };
+
+    return function (
+      target: any,
+      propertyKey: string,
+      descriptor: PropertyDescriptor
+    ) {
+      recurrenceCb(frequency, descriptor.value, opts);
     };
   }
 }
